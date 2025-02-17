@@ -48,7 +48,7 @@ public class RobotContainer {
 
   private void configureBindings() {
     drive.setDefaultCommand(
-      drive.drive(
+      drive.fieldOriantedDrive(
         ()-> -controller.getLeftY(),
         ()-> -controller.getLeftX(),
         ()-> -controller.getRightX()

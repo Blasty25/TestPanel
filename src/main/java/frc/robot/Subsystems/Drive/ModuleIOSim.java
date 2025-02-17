@@ -1,5 +1,9 @@
 package frc.robot.Subsystems.Drive;
 
+import java.lang.constant.DirectMethodHandleDesc;
+
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -26,7 +30,7 @@ public class ModuleIOSim implements ModuleIO {
             DriveConstants.turnkD);
 
     private double driveVelocity;
-    
+
     private double driveAppliedVolts = 0.0;
     private double turnAppliedVolts = 0.0;
 
@@ -34,24 +38,27 @@ public class ModuleIOSim implements ModuleIO {
 
     public ModuleIOSim() {
         turnPID.enableContinuousInput(-Math.PI, Math.PI);
+        driveMotor.setInputVoltage(0);
+        turnMotor.setInputVoltage(0);
     }
 
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
 
-        driveVelocity = driveMotor.getAngularVelocityRadPerSec();
-
-        driveAppliedVolts = driveFF + drivePID.calculate(driveMotor.getAngularVelocityRadPerSec());
-        turnAppliedVolts = turnPID.calculate(turnMotor.getAngularPositionRad());
-
-        // Set Simulation Stuff
-
-        driveMotor.setInputVoltage(MathUtil.clamp(driveAppliedVolts, -12, 12));
         driveMotor.update(0.02);
-
-        turnMotor.setInputVoltage(MathUtil.clamp(turnAppliedVolts, -12, 12));
         turnMotor.update(0.02);
 
+        driveVelocity = driveMotor.getAngularVelocityRadPerSec();
+
+        turnAppliedVolts = turnPID.calculate(turnMotor.getAngularPositionRad());
+        driveAppliedVolts = driveFF + drivePID.calculate(driveMotor.getAngularPositionRad());
+
+        inputs.driveAppliedVolts = driveAppliedVolts;
+        inputs.turnAppliedVolts = turnAppliedVolts;
+
+        // Set Simulation Stuff
+        turnMotor.setInputVoltage(MathUtil.clamp(turnAppliedVolts, -12, 12));
+        driveMotor.setInputVoltage(MathUtil.clamp(driveAppliedVolts, -12, 12));
         // Updating Module Values
         inputs.driveCurrent = driveMotor.getCurrentDrawAmps();
         inputs.turnCurrent = turnMotor.getCurrentDrawAmps();

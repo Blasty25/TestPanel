@@ -25,21 +25,17 @@ public class Constants {
         public static final double turnGearing = 150.0 / 7.0;
         public static final double turnMOI = 0.005;
 
-        public static final double drivekP = 0.0;
-        public static final double drivekI = 0.0;
-        public static final double drivekD = 0.0;
+        public static final double drivekP = 0.2;  //0.8
+        public static final double drivekI = 0.1;
+        public static final double drivekD = 0.1;
 
-        public static final double turnkP = 0.0;
-        public static final double turnkI = 0.0;
-        public static final double turnkD = 0.0;
+        public static final double turnkP = 0.2;
+        public static final double turnkI = 0.1;
+        public static final double turnkD = 0.1;
 
         public static final double driveS = 0.0;
-        public static final double driveV = 0.0;
-        public static final double driveA = 0.0;
-
-        public static final double turnS = 0.0;
-        public static final double turnV = 0.0;
-        public static final double turnA = 0.0;
+        public static final double driveV = 0.1;
+        public static final double driveA = 0.1;
 
         public static final double wheelRadius = Units.inchesToMeters(2.00);
         public static final double trackWidth = Units.inchesToMeters(10.0);
@@ -48,16 +44,16 @@ public class Constants {
         private static final double turnCurrentLimitAmps = 40;
 
         public static final Translation2d[] moduletranslations = {
-                new Translation2d(trackWidth, trackWidth),
-                new Translation2d(trackWidth, -trackWidth),
-                new Translation2d(-trackWidth, trackWidth),
-                new Translation2d(-trackWidth, -trackWidth)
+                new Translation2d(trackWidth, trackWidth),  //FL
+                new Translation2d(trackWidth, -trackWidth), //FR
+                new Translation2d(-trackWidth, trackWidth), //BL
+                new Translation2d(-trackWidth, -trackWidth) //BR
         };
         
-        public static final double trackWidthX = Units.inchesToMeters(20.75);
-        public static final double trackWidthY = Units.inchesToMeters(20.75);
-        public static final double driveBaseRadus = Math.hypot(trackWidthX / 2, trackWidthY /2);
-        public static final double maxAngularspeed = 4.69 / driveBaseRadus;
+
+        public static final double maxDriveSpeed = 4.0; //Meters per second
+        public static final double maxAngularspeed = 5; //Figure out max speeds later
+
     }
 
     
