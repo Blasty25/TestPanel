@@ -12,7 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 /** Add your docs here. */
 public interface GyroIO {
     @AutoLog
-    public static class GyroIOInputs{
+    public static class GyroIOInputs {
         public Pose2d RobotPose = new Pose2d(20, 20, new Rotation2d());
         public boolean isConnected = false;
         public double heading = 0.0;
@@ -20,7 +20,9 @@ public interface GyroIO {
         public double gyroVoltage = 0.0;
     }
 
-    public default void updateInputs(GyroIOInputs inputs) {}
+    public default void updateInputs(GyroIOInputs inputs) {
+    }
 
-    public default void reset() {}
+    public default void reset() {
+    }
 }

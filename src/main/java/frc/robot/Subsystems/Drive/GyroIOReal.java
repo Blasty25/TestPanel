@@ -32,6 +32,7 @@ public class GyroIOReal implements GyroIO{
         }
         inputs.gyroVoltage = gyro.getSupplyVoltage().getValueAsDouble();
         inputs.heading = gyro.getRotation2d().getRadians() - Math.PI;
+        inputs.yawHeading = gyro.getRotation2d();
     }
 
     @Override

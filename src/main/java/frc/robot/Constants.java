@@ -4,18 +4,13 @@
 
 package frc.robot;
 
-import java.lang.reflect.Array;
-import java.security.PublicKey;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
-import frc.robot.Subsystems.Drive.Config;
 
 /** Add your docs here. */
 public class Constants {
     public static class DriveConstants {
-
         public static final double LOOP_UPDATE = 0.02;
         public static final DCMotor motor = DCMotor.getKrakenX60(1);
 
@@ -40,8 +35,14 @@ public class Constants {
         public static final double wheelRadius = Units.inchesToMeters(2.00);
         public static final double trackWidth = Units.inchesToMeters(10.0);
 
-        private static final double driveCurrentLimitAmps = 80;
-        private static final double turnCurrentLimitAmps = 40;
+        public static final int driveCurrentLimitAmps = 80;
+        public static final int turnCurrentLimitAmps = 40;
+
+        public static final double drivePositionConversionFactor = 2.0 * Math.PI * wheelRadius / driveGearing;
+        public static final double turnPositionConversionFactor = 2.0 * Math.PI / turnGearing;
+
+        public static final double driveVelocityFactor = drivePositionConversionFactor / 60.0;
+        public static final double turnVelocityFactor = turnPositionConversionFactor / 60.0;
 
         public static final Translation2d[] moduletranslations = {
                 new Translation2d(trackWidth, trackWidth),  //FL
@@ -51,10 +52,19 @@ public class Constants {
         };
         
 
-        public static final double maxDriveSpeed = 4.0; //Meters per second
-        public static final double maxAngularspeed = 5; //Figure out max speeds later
+        public static final double maxDriveSpeed = 4.2; //Meters per second
+        public static final double maxAngularspeed = 4; //Figure out max speeds later
 
+        public enum BOT {
+            Protolone,
+            Comp
+        }
+
+        public static final BOT type = BOT.Comp;
     }
 
-    
+    public static class CarriageConstants {
+        public static final int carriageId = 12;
+        public static final double maxSpeed = 1.0; //0-1 1 MAX
+    }
 }

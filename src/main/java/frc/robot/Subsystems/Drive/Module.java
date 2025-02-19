@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.Subsystems.Drive;
 
 import org.littletonrobotics.junction.Logger;
@@ -10,7 +6,6 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.DriveConstants;
 
 public class Module {
@@ -50,6 +45,12 @@ public class Module {
       inputs.turnPosition = state.angle;
     }
 
+    public void xState(SwerveModuleState state){
+        state.optimize(inputs.turnPosition);
+        io.setTurnMotor(state.angle);
+        inputs.turnPosition = state.angle;
+      }
+
     public double getVelocityMetersPerSec() {
         return inputs.driveVelocity * DriveConstants.wheelRadius;
     }
@@ -60,6 +61,10 @@ public class Module {
 
     public SwerveModuleState getState() {
         return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
+    }
+
+    public void runCharacterization(double volts){
+        io.runCharacterization(volts);
     }
 
 

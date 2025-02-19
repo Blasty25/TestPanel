@@ -4,15 +4,15 @@
 
 package frc.robot.Subsystems.Drive;
 
-import java.util.Queue;
+
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
-import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -24,17 +24,15 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.AnalogEncoder;
-import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 
 /** Add your docs here. */
-public class ModuleIOReal implements ModuleIO {
+public class ModuleIOTalonFX implements ModuleIO {
 
     // HardWare
     private final TalonFX driveTalon;
     private final TalonFX turnTalon;
-    private final AnalogEncoder encoder;
+    private final CANcoder encoder;
 
     // Config
     private final TalonFXConfiguration driveConfig = new TalonFXConfiguration();
@@ -43,7 +41,6 @@ public class ModuleIOReal implements ModuleIO {
     private final boolean isTurnInverted;
 
     // Control requests
-    private final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0).withUpdateFreqHz(0);
     private final PositionTorqueCurrentFOC positionTorqueCurrentRequest = new PositionTorqueCurrentFOC(0.0)
             .withUpdateFreqHz(0);
     private final VelocityTorqueCurrentFOC velocityTorqueCurrentRequest = new VelocityTorqueCurrentFOC(0.0)
@@ -62,10 +59,10 @@ public class ModuleIOReal implements ModuleIO {
     private final StatusSignal<Voltage> turnAppliedVolts;
     private final StatusSignal<Current> turnCurrent;
 
-    public ModuleIOReal(Config config) {
+    public ModuleIOTalonFX(Config config) {
         driveTalon = new TalonFX(config.driveMotorId);
         turnTalon = new TalonFX(config.turnMotorId);
-        encoder = new AnalogEncoder(config.encoderChannel);
+        encoder = new CANcoder(config.encoderChannel);
         isTurnInverted = config.isTurnInverted;
         encoderOffset = config.encoderOffset;
 
@@ -88,7 +85,7 @@ public class ModuleIOReal implements ModuleIO {
         turnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         turnConfig.Slot0 = new Slot0Configs().withKP(DriveConstants.turnkP).withKI(DriveConstants.turnkI)
                 .withKD(DriveConstants.turnkD);
-        turnConfig.Feedback.FeedbackRemoteSensorID = encoder.getChannel();
+        turnConfig.Feedback.FeedbackRemoteSensorID = encoder.getDeviceID();
         turnConfig.Feedback.RotorToSensorRatio = DriveConstants.turnGearing;
         turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
         turnConfig.TorqueCurrent.PeakForwardTorqueCurrent = 40;
@@ -107,7 +104,7 @@ public class ModuleIOReal implements ModuleIO {
         driveCurrent = driveTalon.getStatorCurrent();
 
         // Create turn status signals
-        turnAbsolutePosition = encoder.get() - encoderOffset;
+        turnAbsolutePosition = encoder.getPosition().getValueAsDouble() - encoderOffset;
         turnPosition = turnTalon.getPosition();
         turnVelocity = turnTalon.getVelocity();
         turnAppliedVolts = turnTalon.getMotorVoltage();
@@ -136,7 +133,7 @@ public class ModuleIOReal implements ModuleIO {
         inputs.driveCurrent = driveCurrent.getValueAsDouble();
 
         // Update Turn Inputs
-        inputs.turnAbsoulutePosition = Rotation2d.fromRotations(turnAbsolutePosition);
+        inputs.turnEncoder = turnAbsolutePosition;
         inputs.turnPosition = Rotation2d.fromRotations(turnPosition.getValueAsDouble());
         inputs.turnVelocity = Units.rotationsToRadians(turnVelocity.getValueAsDouble());
         inputs.turnAppliedVolts = turnAppliedVolts.getValueAsDouble();
@@ -149,6 +146,13 @@ public class ModuleIOReal implements ModuleIO {
                 velocityTorqueCurrentRequest
                         .withVelocity(Units.radiansToRotations(positionRad))
                         .withFeedForward(feedForward));
+    }
+
+    @Override
+    public void runCharacterization(double volts) {
+        //run motors at different times! DO NOT RUN DRIVE AND TURN AT SAME TIME! Do 2 different SysId tests
+        driveTalon.setVoltage(volts);
+        // turnTalon.setVoltage(volts);
     }
 
     @Override

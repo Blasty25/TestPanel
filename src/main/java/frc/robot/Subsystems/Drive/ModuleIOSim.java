@@ -1,8 +1,5 @@
 package frc.robot.Subsystems.Drive;
 
-import java.lang.constant.DirectMethodHandleDesc;
-
-import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -38,8 +35,6 @@ public class ModuleIOSim implements ModuleIO {
 
     public ModuleIOSim() {
         turnPID.enableContinuousInput(-Math.PI, Math.PI);
-        driveMotor.setInputVoltage(0);
-        turnMotor.setInputVoltage(0);
     }
 
     @Override
@@ -53,12 +48,12 @@ public class ModuleIOSim implements ModuleIO {
         turnAppliedVolts = turnPID.calculate(turnMotor.getAngularPositionRad());
         driveAppliedVolts = driveFF + drivePID.calculate(driveMotor.getAngularPositionRad());
 
-        inputs.driveAppliedVolts = driveAppliedVolts;
-        inputs.turnAppliedVolts = turnAppliedVolts;
-
         // Set Simulation Stuff
         turnMotor.setInputVoltage(MathUtil.clamp(turnAppliedVolts, -12, 12));
         driveMotor.setInputVoltage(MathUtil.clamp(driveAppliedVolts, -12, 12));
+
+        inputs.driveAppliedVolts = driveMotor.getInputVoltage();
+        inputs.turnAppliedVolts = turnMotor.getInputVoltage();
         // Updating Module Values
         inputs.driveCurrent = driveMotor.getCurrentDrawAmps();
         inputs.turnCurrent = turnMotor.getCurrentDrawAmps();

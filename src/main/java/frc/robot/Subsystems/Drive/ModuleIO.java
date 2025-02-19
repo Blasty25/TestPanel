@@ -19,8 +19,11 @@ public interface ModuleIO {
         public double driveFeedForward = 0.0;
         public double driveAppliedVolts = 0.0;
 
+        public double stateMPS = 0.0;
+        public Rotation2d angleMPS = new Rotation2d();
+
         public Rotation2d turnPosition = new Rotation2d();
-        public Rotation2d turnAbsoulutePosition = new Rotation2d();
+        public double turnEncoder = 0.0;
         public double turnCurrent = 0.0;
         public double turnVelocity = 0.0;
         public double turnFeedforward = 0.0;
@@ -29,6 +32,8 @@ public interface ModuleIO {
         public double[] odometryTimestamps = new double[] {};
         public double[] odometryDrivePositionsRad = new double[] {};
         public Rotation2d[] odometryTurnPositions = new Rotation2d[] {};
+
+        public double[] driveVoltage = new double[] {};
 
         public double DEBUG = 0.0;
     }
@@ -52,6 +57,10 @@ public interface ModuleIO {
     }
 
     public default void runTurnPosition(Rotation2d rotation) {
+    }
+
+    public default void runCharacterization(double volts){
+
     }
 
 }
