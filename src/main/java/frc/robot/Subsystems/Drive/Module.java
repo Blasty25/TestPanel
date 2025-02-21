@@ -60,7 +60,8 @@ public class Module {
         return new SwerveModulePosition(getPositionMeters(), getAngle());
     }
 
-    public SwerveModuleState getState() {
+    public SwerveModuleState 
+    getState() {
         return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
     }
 

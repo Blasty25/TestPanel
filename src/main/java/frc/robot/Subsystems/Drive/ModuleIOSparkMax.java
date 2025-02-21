@@ -16,6 +16,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.AnalogEncoder;
 import frc.robot.Constants.DriveConstants;
 
@@ -29,11 +30,11 @@ public class ModuleIOSparkMax implements ModuleIO {
     private RelativeEncoder driveEncoder;
     private RelativeEncoder turnEncoder;
 
-    private SparkClosedLoopController driveController = driveSparky.getClosedLoopController();
-    private SparkClosedLoopController turnController = turnSparky.getClosedLoopController();
+    private SparkClosedLoopController driveController;
+    private SparkClosedLoopController turnController;
 
-    private SparkMaxConfig driveConfig;
-    private SparkMaxConfig turnConfig;
+    private SparkMaxConfig driveConfig = new SparkMaxConfig();
+    private SparkMaxConfig turnConfig = new SparkMaxConfig();
 
     private double encoderOffset;
 
@@ -46,8 +47,7 @@ public class ModuleIOSparkMax implements ModuleIO {
 
         encoderOffset = config.encoderOffset;
 
-        driveConfig.
-        inverted(false)
+        driveConfig
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(DriveConstants.driveCurrentLimitAmps);
         driveConfig.encoder
@@ -65,16 +65,24 @@ public class ModuleIOSparkMax implements ModuleIO {
         .velocityConversionFactor(DriveConstants.turnVelocityFactor);
         turnConfig.closedLoop
         .pid(DriveConstants.turnkP, DriveConstants.turnkI, DriveConstants.turnkD);
+        turnConfig.closedLoop
+        .positionWrappingInputRange(-Math.PI, Math.PI)
+        .positionWrappingEnabled(true);
         
         driveSparky.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         turnSparky.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         driveEncoder = driveSparky.getEncoder();
         turnEncoder = turnSparky.getEncoder();
+
+        driveController = driveSparky.getClosedLoopController();
+        turnController = turnSparky.getClosedLoopController();
     }
 
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
+        inputs.turnEncoder = encoder.get() - Units.radiansToRotations(encoderOffset);
+
         inputs.driveAppliedVolts = driveSparky.getAppliedOutput();
         inputs.turnAppliedVolts = turnSparky.getAppliedOutput();
         
@@ -89,7 +97,6 @@ public class ModuleIOSparkMax implements ModuleIO {
 
         inputs.driveVoltage = new double[] {driveSparky.getAppliedOutput() * driveSparky.getBusVoltage()};
 
-        inputs.turnEncoder = encoder.get() - encoderOffset;
     }
 
     @Override
@@ -102,10 +109,10 @@ public class ModuleIOSparkMax implements ModuleIO {
         turnController.setReference(rotation.getRadians(), ControlType.kPosition);
     }
 
-    @Override
-    public void runCharacterization(double volts) {
-        driveSparky.setVoltage(volts);
-    }
+    // @Override
+    // public void runCharacterization(double volts) {
+    //     driveSparky.setVoltage(volts);
+    // }
 
 
     @Override

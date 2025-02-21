@@ -10,16 +10,16 @@ public class ModuleConfig {
         Config config;
         switch (index) {
             case 0:
-                config = new Config(1, 2, 1, 0.0, false);
+                config = new Config(1, 2, 1, 0.74, false);
                 return config;
             case 1:
-                config = new Config(3, 4, 2, 0.0, false);
+                config = new Config(3, 4, 2, 0.35, false);
                 return config;
             case 2: 
-                config = new Config(4, 5, 3, 0.0, false);
+                config = new Config(5, 6, 3, 0.51, false);
                 return config;
             case 3:
-                config = new Config(7, 8, 4, 0.0, false);
+                config = new Config(7, 8, 4, 0.25, false);
                 return config;
             default:
                 config = new Config(0, 0, 0, 0.0, false); 

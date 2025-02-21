@@ -27,8 +27,8 @@ public class ElevatorIOSparkMax implements ElevatorIO{
     private RelativeEncoder encoder;
     
     public ElevatorIOSparkMax(){
-        leftMotor = new SparkMax(30, MotorType.kBrushless);
-        rightMotor = new SparkMax(31, MotorType.kBrushless);
+        leftMotor = new SparkMax(31, MotorType.kBrushless);
+        rightMotor = new SparkMax(32, MotorType.kBrushless);
 
         config
         .inverted(false)

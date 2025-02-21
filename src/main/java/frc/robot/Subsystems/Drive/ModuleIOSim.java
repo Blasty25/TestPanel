@@ -45,16 +45,17 @@ public class ModuleIOSim implements ModuleIO {
 
         driveVelocity = driveMotor.getAngularVelocityRadPerSec();
 
-        turnAppliedVolts = turnPID.calculate(turnMotor.getAngularPositionRad());
-        driveAppliedVolts = driveFF + drivePID.calculate(driveMotor.getAngularPositionRad());
-
         // Set Simulation Stuff
         turnMotor.setInputVoltage(MathUtil.clamp(turnAppliedVolts, -12, 12));
         driveMotor.setInputVoltage(MathUtil.clamp(driveAppliedVolts, -12, 12));
 
         inputs.driveAppliedVolts = driveMotor.getInputVoltage();
         inputs.turnAppliedVolts = turnMotor.getInputVoltage();
-        // Updating Module Values
+
+        turnAppliedVolts = turnPID.calculate(turnMotor.getAngularPositionRad());
+        driveAppliedVolts = driveFF + drivePID.calculate(driveMotor.getAngularPositionRad());
+
+        // Updating Module Values   
         inputs.driveCurrent = driveMotor.getCurrentDrawAmps();
         inputs.turnCurrent = turnMotor.getCurrentDrawAmps();
 
