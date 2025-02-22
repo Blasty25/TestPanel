@@ -1,15 +1,12 @@
 package frc.robot.Subsystems.Drive;
 
 import java.util.function.DoubleSupplier;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -41,6 +38,7 @@ public class Drive extends SubsystemBase {
     private final ModuleIOInputsAutoLogged moduleInputs = new ModuleIOInputsAutoLogged();
 
     private Rotation2d gyroEstimator = new Rotation2d();
+
     private SwerveModulePosition[] firstPositions = new SwerveModulePosition[] {
             new SwerveModulePosition(),
             new SwerveModulePosition(),
@@ -49,7 +47,8 @@ public class Drive extends SubsystemBase {
     };
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DriveConstants.moduletranslations);
-    private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, gyroInputs.yawHeading, firstPositions);
+    private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, gyroInputs.yawHeading,
+            firstPositions);
     private SysIdRoutine routine;
 
     public Drive(GyroIO gyroIO, ModuleIO flModuleIO, ModuleIO frModuleIO, ModuleIO blModuleIO, ModuleIO brModuleIO) {
@@ -63,9 +62,9 @@ public class Drive extends SubsystemBase {
         // AUTOS PATH PLANNER
         try {
             DriveConstants.config = RobotConfig.fromGUISettings();
-         } catch (Exception e) {
-             e.printStackTrace();
-         }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         AutoBuilder.configure(
                 this::getPose,
@@ -90,69 +89,39 @@ public class Drive extends SubsystemBase {
             module.setBrakeMode(true);
         }
 
-        // routine = new SysIdRoutine(
-        //         new SysIdRoutine.Config(
-        //                 Velocity.ofRelativeUnits(1.0, Units.Volts.per(Units.Seconds)),
-        //                 Voltage.ofRelativeUnits(3.0, Units.Volts),
-        //                 Time.ofRelativeUnits(20.0, Units.Seconds)),
+        routine = new SysIdRoutine(
+                new SysIdRoutine.Config(
+                        Velocity.ofRelativeUnits(1.0, Units.Volts.per(Units.Seconds)),
+                        Voltage.ofRelativeUnits(3.0, Units.Volts),
+                        Time.ofRelativeUnits(20.0, Units.Seconds)),
 
-        //         new SysIdRoutine.Mechanism(
-        //                 voltage -> runCharacterization(2),
-        //                 log -> {
-        //                     log.motor("fLDrive")
-        //                             .linearPosition(Distance.ofRelativeUnits(moduleInputs.drivePosition, Units.Meters))
-        //                             .linearVelocity(LinearVelocity.ofRelativeUnits(moduleInputs.driveVelocity,
-        //                                     Units.MetersPerSecond));
-        //                 },
-        //                 this, "fl Drive"));
+                new SysIdRoutine.Mechanism(
+                        voltage -> runCharacterization(2),
+                        log -> {
+                            log.motor("Drive")
+                                    .linearPosition(Distance.ofRelativeUnits(moduleInputs.drivePosition,
+                                            Units.Meters))
+                                    .linearVelocity(LinearVelocity.ofRelativeUnits(moduleInputs.driveVelocity,
+                                            Units.MetersPerSecond));
+                        },
+                        this, "Drive"));
+        routine = new SysIdRoutine(
+                new SysIdRoutine.Config(
+                        Velocity.ofRelativeUnits(1.0, Units.Volts.per(Units.Seconds)),
+                        Voltage.ofRelativeUnits(3.0, Units.Volts),
+                        Time.ofRelativeUnits(20.0, Units.Seconds)),
 
-        // routine = new SysIdRoutine(
-        //         new SysIdRoutine.Config(
-        //                 Velocity.ofRelativeUnits(1.0, Units.Volts.per(Units.Seconds)),
-        //                 Voltage.ofRelativeUnits(3.0, Units.Volts),
-        //                 Time.ofRelativeUnits(20.0, Units.Seconds)),
+                new SysIdRoutine.Mechanism(
+                        voltage -> runCharacterization(2),
+                        log -> {
+                            log.motor("Turn")
+                                    .linearPosition(Distance.ofRelativeUnits(moduleInputs.turnPosition.getRotations(),
+                                            Units.Meters))
+                                    .linearVelocity(LinearVelocity.ofRelativeUnits(moduleInputs.turnVelocity,
+                                            Units.MetersPerSecond));
+                        },
+                        this, "Turn"));
 
-        //         new SysIdRoutine.Mechanism(
-        //                 voltage -> runCharacterization(2),
-        //                 log -> {
-        //                     log.motor("fr Drive")
-        //                             .linearPosition(Distance.ofRelativeUnits(moduleInputs.drivePosition, Units.Meters))
-        //                             .linearVelocity(LinearVelocity.ofRelativeUnits(moduleInputs.driveVelocity,
-        //                                     Units.MetersPerSecond));
-        //                 },
-        //                 this, "fr Drive"));
-
-        // routine = new SysIdRoutine(
-        //         new SysIdRoutine.Config(
-        //                 Velocity.ofRelativeUnits(1.0, Units.Volts.per(Units.Seconds)),
-        //                 Voltage.ofRelativeUnits(3.0, Units.Volts),
-        //                 Time.ofRelativeUnits(20.0, Units.Seconds)),
-
-        //         new SysIdRoutine.Mechanism(
-        //                 voltage -> runCharacterization(2),
-        //                 log -> {
-        //                     log.motor("bl Drive")
-        //                             .linearPosition(Distance.ofRelativeUnits(moduleInputs.drivePosition, Units.Meters))
-        //                             .linearVelocity(LinearVelocity.ofRelativeUnits(moduleInputs.driveVelocity,
-        //                                     Units.MetersPerSecond));
-        //                 },
-        //                 this, "bl Drive"));
-
-        // routine = new SysIdRoutine(
-        //         new SysIdRoutine.Config(
-        //                 Velocity.ofRelativeUnits(1.0, Units.Volts.per(Units.Seconds)),
-        //                 Voltage.ofRelativeUnits(3.0, Units.Volts),
-        //                 Time.ofRelativeUnits(20.0, Units.Seconds)),
-
-        //         new SysIdRoutine.Mechanism(
-        //                 voltage -> runCharacterization(2),
-        //                 log -> {
-        //                     log.motor("br Drive")
-        //                             .linearPosition(Distance.ofRelativeUnits(moduleInputs.drivePosition, Units.Meters))
-        //                             .linearVelocity(LinearVelocity.ofRelativeUnits(moduleInputs.driveVelocity,
-        //                                     Units.MetersPerSecond));
-        //                 },
-        //                 this, "br Drive"));
     }
 
     public Pose2d getPose() {
@@ -164,8 +133,7 @@ public class Drive extends SubsystemBase {
     }
 
     public ChassisSpeeds getSpeeds() {
-        ChassisSpeeds currentSpeed = kinematics.toChassisSpeeds(getStates());
-        return currentSpeed;
+        return kinematics.toChassisSpeeds(getStates());
     }
 
     public void runCharacterization(double volts) {
@@ -183,20 +151,20 @@ public class Drive extends SubsystemBase {
             module.updateInputs();
         }
 
-        SwerveModulePosition[] modulePositions = modulePositions();
+        SwerveModulePosition[] currentState = modulePositions();
 
         SwerveModulePosition[] finalModules = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
             finalModules[i] = new SwerveModulePosition(
-                    (modulePositions[i].distanceMeters - firstPositions[i].distanceMeters) / 0.02,
-                    modulePositions[i].angle);
+                    currentState[i].distanceMeters - firstPositions[i].distanceMeters,
+                    currentState[i].angle);
         }
 
         Twist2d twist = kinematics.toTwist2d(finalModules);
         gyroEstimator = gyroEstimator.plus(new Rotation2d(twist.dtheta));
 
-        gyroInputs.RobotPose = odometry.update(gyroEstimator, modulePositions);
-  
+        gyroInputs.RobotPose = odometry.update(new Rotation2d(), finalModules);
+
     }
 
     public SwerveModulePosition[] modulePositions() {

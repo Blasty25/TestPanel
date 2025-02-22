@@ -104,7 +104,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveCurrent = driveTalon.getStatorCurrent();
 
         // Create turn status signals
-        turnAbsolutePosition = encoder.getPosition().getValueAsDouble() - encoderOffset;
+        turnAbsolutePosition = encoder.getPosition().getValueAsDouble() - Units.radiansToRotations(encoderOffset);
         turnPosition = turnTalon.getPosition();
         turnVelocity = turnTalon.getVelocity();
         turnAppliedVolts = turnTalon.getMotorVoltage();
@@ -148,12 +148,12 @@ public class ModuleIOTalonFX implements ModuleIO {
                         .withFeedForward(feedForward));
     }
 
-    @Override
-    public void runCharacterization(double volts) {
-        //run motors at different times! DO NOT RUN DRIVE AND TURN AT SAME TIME! Do 2 different SysId tests
-        driveTalon.setVoltage(volts);
-        // turnTalon.setVoltage(volts);
-    }
+//     @Override
+//     public void runCharacterization(double volts) {
+//         //run motors at different times! DO NOT RUN DRIVE AND TURN AT SAME TIME! Do 2 different SysId tests
+//         driveTalon.setVoltage(volts);
+//         // turnTalon.setVoltage(volts);
+//     }
 
     @Override
     public void runTurnPosition(Rotation2d rotation) {

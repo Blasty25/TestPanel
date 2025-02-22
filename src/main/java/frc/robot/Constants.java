@@ -62,7 +62,7 @@ public class Constants {
             Comp
         }
 
-        public static final BOT type = BOT.Protolone;
+        public static final BOT type = BOT.Comp;
         ///AUTOS
         public static RobotConfig config;
     }
