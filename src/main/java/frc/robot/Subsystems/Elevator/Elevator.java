@@ -1,13 +1,11 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.Subsystems.Elevator;
+
+import static frc.robot.Subsystems.Elevator.ElevatorConstants.*;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.trajectory.ExponentialProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
@@ -22,27 +20,31 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class Elevator extends SubsystemBase {
     private final ElevatorIO io;
-    private ElevatorInputsAutoLogged inputs = new ElevatorInputsAutoLogged();
+    private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
-    private final TrapezoidProfile profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(2.5, 4.5));
-    private TrapezoidProfile.State profileState = new TrapezoidProfile.State(0.0, 0.0);
-    private TrapezoidProfile.State futureProfileState = new TrapezoidProfile.State(0.0, 0.0);
+    private final ExponentialProfile profile = new ExponentialProfile(ExponentialProfile.Constraints.fromCharacteristics(maxProfileVoltage - s - g, v, a));
+    private ExponentialProfile.State profileState = new ExponentialProfile.State(0.0, 0.0);
+    private ExponentialProfile.State futureProfileState = new ExponentialProfile.State(0.0, 0.0);
 
-    private ElevatorFeedforward feedforward = new ElevatorFeedforward(ElevatorConstants.kS, ElevatorConstants.kG, ElevatorConstants.kV, ElevatorConstants.kA);
+    private ElevatorFeedforward feedforward = new ElevatorFeedforward(s, g, v);
 
     private final SysIdRoutine routine;
 
     public Elevator(ElevatorIO io) {
         this.io = io;
 
+        periodic();
+
+        profileState.position = inputs.position;
+
         routine = new SysIdRoutine(
             new SysIdRoutine.Config(
-                Velocity.ofRelativeUnits(1.0, Units.Volts.per(Units.Seconds)), 
-                Voltage.ofRelativeUnits(3.0, Units.Volts), 
-                Time.ofRelativeUnits(20.0, Units.Seconds)
+                Velocity.ofRelativeUnits(sysIdRampUp, Units.Volts.per(Units.Seconds)), 
+                Voltage.ofRelativeUnits(sysIdStep, Units.Volts), 
+                Time.ofRelativeUnits(sysIdTimeout, Units.Seconds)
             ), 
             new SysIdRoutine.Mechanism(
-                voltage -> io.setHeight(0, voltage.magnitude()),
+                voltage -> io.setPosition(0, voltage.magnitude()),
                 log -> {
                     log.motor("elevator")
                         .voltage(Voltage.ofRelativeUnits(inputs.voltages[0], Units.Volts))
@@ -66,12 +68,12 @@ public class Elevator extends SubsystemBase {
     }
 
     public void setPosition(double position) {
-        futureProfileState = profile.calculate(0.02, profileState, new TrapezoidProfile.State(position, 0.0));
+        futureProfileState = profile.calculate(0.02, profileState, new ExponentialProfile.State(position, 0.0));
         Logger.recordOutput("Elevator/Position/Setpoint", profileState.position);
         Logger.recordOutput("Elevator/Velocity/Setpoint", profileState.velocity);
         double feedforwardValue = feedforward.calculateWithVelocities(profileState.velocity, futureProfileState.velocity);
         Logger.recordOutput("Elevator/Feedforward", feedforwardValue);
-        io.setHeight(profileState.position, feedforwardValue);
+        io.setPosition(futureProfileState.position, feedforwardValue);
         profileState = futureProfileState;
     }
 
@@ -86,10 +88,10 @@ public class Elevator extends SubsystemBase {
 
     public Command sysIdRoutine() {
         return Commands.sequence(
-            routine.quasistatic(SysIdRoutine.Direction.kForward).until(() -> inputs.position > 0.9),
-            routine.quasistatic(SysIdRoutine.Direction.kReverse).until(() -> inputs.position < 0.1),
-            routine.dynamic(SysIdRoutine.Direction.kForward).until(() -> inputs.position > 0.9),
-            routine.dynamic(SysIdRoutine.Direction.kReverse).until(() -> inputs.position < 0.1)
+            routine.quasistatic(SysIdRoutine.Direction.kForward).until(() -> inputs.position > sysIdMaxPosition),
+            routine.quasistatic(SysIdRoutine.Direction.kReverse).until(() -> inputs.position < sysIdMinPosition),
+            routine.dynamic(SysIdRoutine.Direction.kForward).until(() -> inputs.position > sysIdMaxPosition),
+            routine.dynamic(SysIdRoutine.Direction.kReverse).until(() -> inputs.position < sysIdMinPosition)
         );
     }
 }

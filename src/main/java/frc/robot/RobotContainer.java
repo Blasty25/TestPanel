@@ -24,6 +24,7 @@ import frc.robot.Subsystems.Drive.ModuleIOSparkMax;
 import frc.robot.Subsystems.Elevator.Elevator;
 import frc.robot.Subsystems.Elevator.ElevatorIOSim;
 import frc.robot.Subsystems.Elevator.ElevatorIOSparkMax;
+import frc.robot.Subsystems.Elevator.Commands.setPosition;
 
 public class RobotContainer {
   private Drive drive;
@@ -75,20 +76,20 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    elevator.setDefaultCommand(
-        new RunCommand(
-            () -> {
-              elevator.setPosition(
-                  controller.povUp().getAsBoolean() ? 1.0
-                      : (controller.povLeft().getAsBoolean() ? 0.6 : (controller.povRight().getAsBoolean() ? 0.4 : 0)));
-            },
-            elevator));
+    controller.rightTrigger().whileTrue(new RunIntake(CarriageConstants.maxSpeed));
+    controller.leftTrigger().whileTrue(new RunOuttake(CarriageConstants.maxSpeed));
 
-    controller.b().whileTrue(new RunIntake(CarriageConstants.maxSpeed));
-    controller.y().whileTrue(new RunOuttake(CarriageConstants.maxSpeed));
+    controller.povLeft().whileTrue(new setPosition(elevator, 0.4));
+    controller.povUp().whileTrue(new setPosition(elevator, 1.4));
+    controller.povRight().whileTrue(new setPosition(elevator, 0.6));
+    controller.povDown().whileTrue(new setPosition(elevator,0.0));
 
+    controller.b().whileTrue(drive.resetGyro());
+
+    //FYI IF USING SYS ID GO TO MODULEIO AND CHANGE RUNSYSID TO TRUE
     // controller.a().whileTrue(elevator.sysIdRoutine());
     // controller.b().whileTrue(drive.sysIDSwerve());
+    // controller.a().whileTrue(elevator.sysIdRoutine());
   }
 
   public Command getAutonomousCommand() {

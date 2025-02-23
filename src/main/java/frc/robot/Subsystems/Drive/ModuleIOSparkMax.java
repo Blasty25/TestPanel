@@ -38,6 +38,7 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     private double encoderOffset;
 
+    private ModuleIOInputsAutoLogged input = new ModuleIOInputsAutoLogged();
 
     public ModuleIOSparkMax(Config config){
         driveSparky = new SparkMax(config.driveMotorId, MotorType.kBrushless);
@@ -109,10 +110,13 @@ public class ModuleIOSparkMax implements ModuleIO {
         turnController.setReference(rotation.getRadians(), ControlType.kPosition);
     }
 
-    // @Override
-    // public void runCharacterization(double volts) {
-    //     driveSparky.setVoltage(volts);
-    // }
+    @Override
+    public void runCharacterization(double volts) {
+        if (input.runSysId) {
+            driveSparky.setVoltage(volts);
+            // turnSparky.setVoltage(volts);
+        }
+    }
 
 
     @Override
