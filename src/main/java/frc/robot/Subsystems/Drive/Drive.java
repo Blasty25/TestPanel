@@ -11,6 +11,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
@@ -41,6 +42,7 @@ public class Drive extends SubsystemBase {
     private final ModuleIOInputsAutoLogged moduleInputs = new ModuleIOInputsAutoLogged();
 
     private Rotation2d gyroEstimator = new Rotation2d();
+
     private SwerveModulePosition[] firstPositions = new SwerveModulePosition[] {
             new SwerveModulePosition(),
             new SwerveModulePosition(),
@@ -50,18 +52,17 @@ public class Drive extends SubsystemBase {
 
     // MODULE MAP USE FOR DEBUGGING
     /*
-     * |
-     * FL(0) | FR(1)
-     * |
+     *          |
+     *    FL(0) | FR(1)
+     *          |
      * ---------|---------
-     * |
-     * BL(2) | BR(3)
-     * |
+     *          |
+     *    BL(2) | BR(3)
+     *          |
      */
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DriveConstants.moduletranslations);
-    private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, gyroInputs.yawHeading,
-            firstPositions);
+    private final SwerveDrivePoseEstimator pose;
     private SysIdRoutine routine;
 
     public Drive(GyroIO gyroIO, ModuleIO flModuleIO, ModuleIO frModuleIO, ModuleIO blModuleIO, ModuleIO brModuleIO) {
@@ -71,6 +72,8 @@ public class Drive extends SubsystemBase {
         modules[1] = new Module(frModuleIO, 1);
         modules[2] = new Module(blModuleIO, 2);
         modules[3] = new Module(brModuleIO, 3);
+
+        pose = new SwerveDrivePoseEstimator(kinematics, gyroInputs.yawHeading, modulePositions(), new Pose2d(2, 2, new Rotation2d()));
 
         // AUTOS PATH PLANNER
         try {
@@ -136,11 +139,11 @@ public class Drive extends SubsystemBase {
     }
 
     public Pose2d getPose() {
-        return odometry.getPoseMeters();
+        return pose.getEstimatedPosition();
     }
 
-    public void resetPose(Pose2d pose) {
-        odometry.resetPose(pose);
+    public void resetPose(Pose2d robotPose) {
+        pose.resetPose(robotPose);
     }
 
     public ChassisSpeeds getSpeeds() {
@@ -168,14 +171,16 @@ public class Drive extends SubsystemBase {
         SwerveModulePosition[] finalModules = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
             finalModules[i] = new SwerveModulePosition(
-                    (modulePositions[i].distanceMeters - firstPositions[i].distanceMeters) / 0.02,
+                    ((modulePositions[i].distanceMeters - firstPositions[i].distanceMeters) / 0.02),
                     modulePositions[i].angle);
         }
 
         Twist2d twist = kinematics.toTwist2d(finalModules);
         gyroEstimator = gyroEstimator.plus(new Rotation2d(twist.dtheta));
 
-        gyroInputs.RobotPose = odometry.update(gyroEstimator, modulePositions);
+        pose.updateWithTime(0.02, gyroEstimator, finalModules);
+
+        gyroInputs.RobotPose = pose.getEstimatedPosition();
 
     }
 
@@ -186,6 +191,7 @@ public class Drive extends SubsystemBase {
         }
         return modulePositions;
     }
+
 
     @AutoLogOutput(key = "Drive/RealOutput")
     public SwerveModuleState[] getStates() {
@@ -231,7 +237,7 @@ public class Drive extends SubsystemBase {
     }
 
     public Command resetGyro() {
-        return Commands.run(() -> {
+        return Commands.runOnce(() -> {
             gyroIO.reset();
         }, this);
     }
