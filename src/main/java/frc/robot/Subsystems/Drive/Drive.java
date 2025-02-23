@@ -187,14 +187,22 @@ public class Drive extends SubsystemBase {
         return modulePositions;
     }
 
-    @AutoLogOutput(key = "Drive/Modules/RealOutput")
+    @AutoLogOutput(key = "Drive/RealOutput")
     public SwerveModuleState[] getStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
         for (int i = 0; i < 4; i++) {
             states[i] = modules[i].getState();
         }
-        Logger.recordOutput("Drive/Modules/RealOutput", states);
+        Logger.recordOutput("Drive/RealOutput", states);
         return states;
+    }
+
+    @AutoLogOutput(key = "Drive/Optimized")
+    public void setModule(SwerveModuleState[] optimizedState){
+        for(int i = 0; i < 4; i++){
+            Logger.recordOutput("Drive/Optimized", optimizedState);
+            modules[i].setState(optimizedState[i]);
+        }
     }
 
     public Command fieldOriantedDrive(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier zSupplier) {
@@ -211,11 +219,7 @@ public class Drive extends SubsystemBase {
                                                     * DriveConstants.maxAngularspeed,
                                             gyroInputs.yawHeading),
                                     0.02));
-                                    
-                    Logger.recordOutput("Drive/Modules/RealOutput", swervemodulestate);
-                    for (int i = 0; i < 4; i++) {
-                        modules[i].setState(swervemodulestate[i]);
-                    }
+                    this.setModule(swervemodulestate);
                 }, this);
     }
 

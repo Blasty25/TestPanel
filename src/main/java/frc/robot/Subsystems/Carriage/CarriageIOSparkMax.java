@@ -34,7 +34,7 @@ public class CarriageIOSparkMax implements CarriageIO{
 
     @Override
     public void setCarriageVolts(double volts) {
-        carriage.setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
+        carriage.setVoltage(MathUtil.clamp(volts, -10.0, 10.0));
     }
 
     @Override

@@ -8,37 +8,26 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Subsystems.Carriage.CarriageSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class RunIntake extends Command {
-  private CarriageSubsystem carriage;
-  private double volts;
-  /** Creates a new RunCarriage. */
-  public RunIntake(double volts) {
-    // Use addRequirements() here to declare subsystem dependencies.
-    carriage = CarriageSubsystem.getInstance();
-    this.volts = volts;
-    addRequirements(carriage);
+public class autoIntake extends Command {
+  public CarriageSubsystem carriage;
+  public autoIntake(CarriageSubsystem carraige) {
+    this.carriage = carraige;
   }
 
-  // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    carriage.setVolts(0);
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
-    carriage.setVolts(volts);
-  }
-
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {
-    carriage.settoZero();
+    carriage.beamBreak();
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;  
+    return true;
   }
 }

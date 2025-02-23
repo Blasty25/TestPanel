@@ -2,6 +2,8 @@ package frc.robot.Subsystems.Carriage;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.reduxrobotics.sensors.canandcolor.ColorData;
+
 
 public interface CarriageIO {
 
