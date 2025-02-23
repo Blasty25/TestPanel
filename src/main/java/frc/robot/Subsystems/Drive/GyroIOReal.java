@@ -8,6 +8,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 
 /** Add your docs here. */
@@ -30,8 +31,17 @@ public class GyroIOReal implements GyroIO{
         if (gyro.isConnected()) {
             inputs.isConnected = true;
         }
-        inputs.heading = gyro.getRotation2d().getRadians() - Math.PI;
         inputs.yawHeading = gyro.getRotation2d();
+    }
+
+    @Override
+    public void setGyro(){
+        Rotation2d lockYaw = gyro.getRotation2d();
+        gyro.setYaw(lockYaw.getRadians());
+    }
+
+    public double gyroAngle() {
+        return gyro.getRotation2d().getRadians();
     }
 
     @Override

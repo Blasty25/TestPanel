@@ -13,14 +13,13 @@ public interface ModuleIO {
 
     @AutoLog
     public static class ModuleIOInputs {
+        public boolean runSysId = false;
+
         public double drivePosition = 0.0;
         public double driveCurrent = 0.0;
         public double driveVelocity = 0.0;
         public double driveFeedForward = 0.0;
         public double driveAppliedVolts = 0.0;
-
-        public double stateMPS = 0.0;
-        public Rotation2d angleMPS = new Rotation2d();
 
         public Rotation2d turnPosition = new Rotation2d();
         public double turnEncoder = 0.0;
