@@ -2,7 +2,6 @@ package frc.robot.Subsystems.Drive;
 
 import java.util.function.DoubleSupplier;
 
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;

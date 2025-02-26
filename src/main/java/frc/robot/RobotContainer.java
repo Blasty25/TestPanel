@@ -8,7 +8,6 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.CommandUtil.runReef;
 import frc.robot.Constants.CarriageConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Subsystems.Carriage.CarriageIOSim;
@@ -22,6 +21,9 @@ import frc.robot.Subsystems.Drive.GyroIO;
 import frc.robot.Subsystems.Drive.GyroIOReal;
 import frc.robot.Subsystems.Drive.ModuleConfig;
 import frc.robot.Subsystems.Drive.ModuleIOTalonFX;
+import frc.robot.Subsystems.Drive.PathCommands.PathFollower;
+import frc.robot.Subsystems.Drive.PathCommands.PoseFollower;
+import frc.robot.Subsystems.Drive.util.PathFinding;
 import frc.robot.Subsystems.Drive.util.lockGyro;
 import frc.robot.Subsystems.Drive.ModuleIOSim;
 import frc.robot.Subsystems.Drive.ModuleIOSparkMax;
@@ -98,12 +100,16 @@ public class RobotContainer {
     controller.b().whileTrue(drive.resetGyro());
 
     //Testing Sequential stuff
-    controller.x().onTrue(new runReef(elevator, carriage, 0.6, 0.5));
+    // controller.x().onTrue(new runReef(elevator, carriage, 0.6, 0.5));
 
     //FYI IF USING SYS ID GO TO MODULEIO AND CHANGE RUNSYSID TO TRUE
     // controller.a().whileTrue(elevator.sysIdRoutine());
     // controller.b().whileTrue(drive.sysIDSwerve());
     // controller.a().whileTrue(elevator.sysIdRoutine());
+
+    //PATHFINDING
+    controller.y().onTrue(new PathFollower(new PathFinding()));
+    controller.x().onTrue(new PoseFollower(new PathFinding()));
   }
 
   public Command getAutonomousCommand() {
