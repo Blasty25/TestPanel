@@ -20,7 +20,7 @@ public class CarriageSubsystem extends SubsystemBase {
   public CarriageSubsystem(CarriageIO carriageIO) {
     io = carriageIO;
     instance = this;
-    color = new Canandcolor(9);
+    // color = new Canandcolor(9);
   }
 
 public static CarriageSubsystem getInstance() {
@@ -35,10 +35,10 @@ public static CarriageSubsystem getInstance() {
   }
   
   public void beamBreak(){
-    double finalColor = color.getBlue() + color.getGreen() + color.getRed();
-    while (finalColor >= 720 && finalColor <= 775) {
-      io.setCarriageVolts(0.1);
-    }
+    // double finalColor = color.getBlue() + color.getGreen() + color.getRed();
+    // while (finalColor >= 720 && finalColor <= 775) {
+    //   io.setCarriageVolts(0.1);
+    // }
     io.setCarriageVolts(0);
   }
 

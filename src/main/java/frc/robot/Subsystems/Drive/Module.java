@@ -41,8 +41,6 @@ public class Module {
       state.optimize(inputs.turnPosition);
       io.setDriveMotor(state.speedMetersPerSecond, driveFeedforward.calculate(state.speedMetersPerSecond));
       io.setTurnMotor(state.angle);
-      inputs.driveVelocity = state.speedMetersPerSecond;
-      inputs.turnPosition = state.angle;
     }
 
     public void xState(SwerveModuleState state){
@@ -59,8 +57,7 @@ public class Module {
         return new SwerveModulePosition(getPositionMeters(), getAngle());
     }
 
-    public SwerveModuleState 
-    getState() {
+    public SwerveModuleState getState() {
         return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
     }
 

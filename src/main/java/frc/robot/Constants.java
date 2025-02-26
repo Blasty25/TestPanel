@@ -54,8 +54,8 @@ public class Constants {
         };
         
 
-        public static final double maxDriveSpeed = 4.2; //Meters per second
-        public static final double maxAngularspeed = 4; //Figure out max speeds later
+        public static final double maxDriveSpeed = 6.2; //Meters per second
+        public static final double maxAngularspeed = 6; //Figure out max speeds later
 
         public enum BOT {
             Protolone,

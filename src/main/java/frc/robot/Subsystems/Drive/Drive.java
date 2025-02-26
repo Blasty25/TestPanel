@@ -17,7 +17,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
@@ -51,7 +50,7 @@ public class Drive extends SubsystemBase {
     };
 
     // MODULE MAP USE FOR DEBUGGING
-    /*
+    /*        FRONT
      *          |
      *    FL(0) | FR(1)
      *          |
@@ -100,7 +99,7 @@ public class Drive extends SubsystemBase {
                 },
                 this);
 
-        // Set the Brake mode to each Module
+        // Set the Brake mode to each Module            
         for (Module module : modules) {
             module.setBrakeMode(true);
         }
@@ -167,7 +166,6 @@ public class Drive extends SubsystemBase {
         }
 
         SwerveModulePosition[] modulePositions = modulePositions();
-
         SwerveModulePosition[] finalModules = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
             finalModules[i] = new SwerveModulePosition(
@@ -178,9 +176,8 @@ public class Drive extends SubsystemBase {
         Twist2d twist = kinematics.toTwist2d(finalModules);
         gyroEstimator = gyroEstimator.plus(new Rotation2d(twist.dtheta));
 
-        pose.updateWithTime(0.02, gyroEstimator, finalModules);
+        gyroInputs.RobotPose = pose.update(gyroEstimator, modulePositions);
 
-        gyroInputs.RobotPose = pose.getEstimatedPosition();
 
     }
 

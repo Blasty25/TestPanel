@@ -33,8 +33,6 @@ public interface ModuleIO {
         public Rotation2d[] odometryTurnPositions = new Rotation2d[] {};
 
         public double[] driveVoltage = new double[] {};
-
-        public double DEBUG = 0.0;
     }
 
     public default void updateInputs(ModuleIOInputs inputs) {

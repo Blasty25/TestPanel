@@ -7,8 +7,6 @@ package frc.robot;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.CommandUtil.runReef;
 import frc.robot.Constants.CarriageConstants;
@@ -83,8 +81,8 @@ public class RobotContainer {
   private void configureBindings() {
     drive.setDefaultCommand(
         drive.fieldOriantedDrive(
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
+            () -> controller.getLeftY(),
+            () -> controller.getLeftX(),
             () -> -controller.getRightX()));
 
     controller.rightTrigger().whileTrue(new RunIntake(CarriageConstants.maxSpeed));

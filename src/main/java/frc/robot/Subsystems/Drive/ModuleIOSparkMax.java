@@ -4,6 +4,8 @@
 
 package frc.robot.Subsystems.Drive;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -101,12 +103,14 @@ public class ModuleIOSparkMax implements ModuleIO {
     }
 
     @Override
-    public void setDriveMotor(double positionRad, double feedForward) {
-        driveController.setReference(positionRad, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedForward);
+    public void setDriveMotor(double velocityMPS, double feedForward) {
+        Logger.recordOutput("Drive/Debug/DriveSetpoint", velocityMPS);
+        driveController.setReference(velocityMPS, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedForward);
     }
 
     @Override
     public void setTurnMotor(Rotation2d rotation) {
+        Logger.recordOutput("Drive/Debug/TurnSetpoint", rotation);
         turnController.setReference(rotation.getRadians(), ControlType.kPosition);
     }
 

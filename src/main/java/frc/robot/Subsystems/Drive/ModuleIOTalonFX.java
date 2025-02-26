@@ -6,6 +6,8 @@ package frc.robot.Subsystems.Drive;
 
 
 
+import static edu.wpi.first.units.Units.*;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -127,17 +129,17 @@ public class ModuleIOTalonFX implements ModuleIO {
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
         // Update Drive Inputs
-        inputs.drivePosition = Units.rotationsToRadians(drivePosition.getValueAsDouble());
-        inputs.driveVelocity = Units.rotationsToRadians(driveVelocity.getValueAsDouble());
-        inputs.driveAppliedVolts = driveAppliedVolts.getValueAsDouble();
-        inputs.driveCurrent = driveCurrent.getValueAsDouble();
+        inputs.drivePosition = drivePosition.getValue().in(Radians);
+        inputs.driveVelocity = driveVelocity.getValue().in(RadiansPerSecond);
+        inputs.driveAppliedVolts = driveAppliedVolts.getValue().in(Volts);
+        inputs.driveCurrent = driveCurrent.getValue().in(Amps);
 
         // Update Turn Inputs
         inputs.turnEncoder = turnAbsolutePosition;
-        inputs.turnPosition = Rotation2d.fromRotations(turnPosition.getValueAsDouble());
-        inputs.turnVelocity = Units.rotationsToRadians(turnVelocity.getValueAsDouble());
-        inputs.turnAppliedVolts = turnAppliedVolts.getValueAsDouble();
-        inputs.turnCurrent = turnCurrent.getValueAsDouble();
+        inputs.turnPosition = Rotation2d.fromRotations(turnPosition.getValue().in(Rotations));
+        inputs.turnVelocity = Units.rotationsToRadians(turnVelocity.getValue().in(RotationsPerSecond));
+        inputs.turnAppliedVolts = turnAppliedVolts.getValue().in(Volts);
+        inputs.turnCurrent = turnCurrent.getValue().in(Amps);
     }
 
     @Override
