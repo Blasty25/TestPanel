@@ -4,6 +4,8 @@
 
 package frc.robot.Subsystems.Drive;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -28,10 +30,9 @@ public class GyroIOReal implements GyroIO{
 
     @Override
     public void updateInputs(GyroIOInputs inputs) {
-        if (gyro.isConnected()) {
-            inputs.isConnected = true;
-        }
+        inputs.isConnected = gyro.isConnected();
         inputs.yawHeading = gyro.getRotation2d();
+        inputs.gyroVoltage = gyro.getSupplyVoltage().getValue().in(Volts);
     }
 
     @Override

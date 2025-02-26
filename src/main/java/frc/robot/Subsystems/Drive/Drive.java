@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
 
 /** Add your docs here. */
@@ -50,7 +51,8 @@ public class Drive extends SubsystemBase {
     };
 
     // MODULE MAP USE FOR DEBUGGING
-    /*        FRONT
+    /*
+     *        FRONT
      *          |
      *    FL(0) | FR(1)
      *          |
@@ -72,7 +74,8 @@ public class Drive extends SubsystemBase {
         modules[2] = new Module(blModuleIO, 2);
         modules[3] = new Module(brModuleIO, 3);
 
-        pose = new SwerveDrivePoseEstimator(kinematics, gyroInputs.yawHeading, modulePositions(), new Pose2d(2, 2, new Rotation2d()));
+        pose = new SwerveDrivePoseEstimator(kinematics, gyroInputs.yawHeading, getModulePositions(),
+                new Pose2d(2, 2, new Rotation2d()));
 
         // AUTOS PATH PLANNER
         try {
@@ -99,7 +102,7 @@ public class Drive extends SubsystemBase {
                 },
                 this);
 
-        // Set the Brake mode to each Module            
+        // Set the Brake mode to each Module
         for (Module module : modules) {
             module.setBrakeMode(true);
         }
@@ -146,8 +149,7 @@ public class Drive extends SubsystemBase {
     }
 
     public ChassisSpeeds getSpeeds() {
-        ChassisSpeeds currentSpeed = kinematics.toChassisSpeeds(getStates());
-        return currentSpeed;
+        return kinematics.toChassisSpeeds(getStates());
     }
 
     public void runCharacterization(double volts) {
@@ -165,7 +167,7 @@ public class Drive extends SubsystemBase {
             module.updateInputs();
         }
 
-        SwerveModulePosition[] modulePositions = modulePositions();
+        SwerveModulePosition[] modulePositions = getModulePositions();
         SwerveModulePosition[] finalModules = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
             finalModules[i] = new SwerveModulePosition(
@@ -176,12 +178,16 @@ public class Drive extends SubsystemBase {
         Twist2d twist = kinematics.toTwist2d(finalModules);
         gyroEstimator = gyroEstimator.plus(new Rotation2d(twist.dtheta));
 
-        gyroInputs.RobotPose = pose.update(gyroEstimator, modulePositions);
+        if (Robot.isSimulation()) {
+            gyroInputs.RobotPose = pose.update(gyroEstimator, modulePositions);
+        }else{
+            gyroInputs.RobotPose = pose.update(gyroInputs.yawHeading, modulePositions);
+        }
 
 
     }
 
-    public SwerveModulePosition[] modulePositions() {
+    public SwerveModulePosition[] getModulePositions() {
         SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
             modulePositions[i] = modules[i].getPosition();
@@ -189,8 +195,6 @@ public class Drive extends SubsystemBase {
         return modulePositions;
     }
 
-
-    @AutoLogOutput(key = "Drive/RealOutput")
     public SwerveModuleState[] getStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
         for (int i = 0; i < 4; i++) {
@@ -200,34 +204,25 @@ public class Drive extends SubsystemBase {
         return states;
     }
 
-    @AutoLogOutput(key = "Drive/Optimized")
-    public void setModule(SwerveModuleState[] optimizedState){
-        for(int i = 0; i < 4; i++){
-            Logger.recordOutput("Drive/Optimized", optimizedState);
-            modules[i].setState(optimizedState[i]);
-        }
-    }
-
     public Command fieldOriantedDrive(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier zSupplier) {
         return new RunCommand(
                 () -> {
-                    SwerveModuleState[] swervemodulestate = kinematics.toSwerveModuleStates(
-                            ChassisSpeeds.discretize(
-                                    ChassisSpeeds.fromFieldRelativeSpeeds(
-                                            (MathUtil.applyDeadband(xSupplier.getAsDouble(), 0.15))
-                                                    * DriveConstants.maxDriveSpeed,
-                                            (MathUtil.applyDeadband((ySupplier.getAsDouble()), 0.15))
-                                                    * DriveConstants.maxDriveSpeed,
-                                            (MathUtil.applyDeadband(zSupplier.getAsDouble(), 0.15))
-                                                    * DriveConstants.maxAngularspeed,
-                                            gyroInputs.yawHeading),
-                                    0.02));
-                    this.setModule(swervemodulestate);
+                        ChassisSpeeds driveChassis = ChassisSpeeds.discretize(ChassisSpeeds.fromFieldRelativeSpeeds(
+                            MathUtil.applyDeadband(xSupplier.getAsDouble(), 0.15)
+                                    * DriveConstants.maxDriveSpeed,
+                            MathUtil.applyDeadband(ySupplier.getAsDouble(), 0.15)
+                                    * DriveConstants.maxDriveSpeed,
+                            MathUtil.applyDeadband(zSupplier.getAsDouble(), 0.15)
+                                    * DriveConstants.maxAngularspeed,
+                            gyroInputs.yawHeading),
+                            0.02);
+                        this.autoDrive(driveChassis);
                 }, this);
     }
 
     public void autoDrive(ChassisSpeeds speeds) {
         SwerveModuleState[] state = kinematics.toSwerveModuleStates(speeds);
+        Logger.recordOutput("Drive/Optimized", speeds);
         for (int i = 0; i < 4; i++) {
             modules[i].setState(state[i]);
         }
@@ -238,7 +233,7 @@ public class Drive extends SubsystemBase {
             gyroIO.reset();
         }, this);
     }
-
+    
     public Command sysIDSwerve() {
         return Commands.sequence(
                 routine.quasistatic(SysIdRoutine.Direction.kForward).until(() -> moduleInputs.drivePosition > 1),

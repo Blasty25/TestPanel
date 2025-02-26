@@ -16,7 +16,7 @@ public class ModuleConfig {
                 config = new Config(3, 4, 2, 6.24, false); 
                 return config;
             case 2: 
-                config = new Config(5, 6, 3, 30.45, false);
+                config = new Config(5, 6, 3, 20.45, false);
                 return config;
             case 3:
                 config = new Config(7, 8, 4, 43.80, false);
