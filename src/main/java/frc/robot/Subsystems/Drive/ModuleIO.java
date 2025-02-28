@@ -13,7 +13,7 @@ public interface ModuleIO {
 
     @AutoLog
     public static class ModuleIOInputs {
-        public boolean runSysId = false;
+        public boolean runSysId = true;
 
         public double drivePosition = 0.0;
         public double driveCurrent = 0.0;

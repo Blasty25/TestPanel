@@ -32,7 +32,6 @@ public class GyroIOReal implements GyroIO{
     public void updateInputs(GyroIOInputs inputs) {
         inputs.isConnected = gyro.isConnected();
         inputs.yawHeading = gyro.getRotation2d();
-        inputs.gyroVoltage = gyro.getSupplyVoltage().getValue().in(Volts);
     }
 
     @Override

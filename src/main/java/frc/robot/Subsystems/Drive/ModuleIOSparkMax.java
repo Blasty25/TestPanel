@@ -84,6 +84,7 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
+        Logger.recordOutput("Drive/Debug/Encoder", encoderOffset);
         inputs.turnEncoder = encoder.get() - Units.radiansToRotations(encoderOffset);
 
         inputs.driveAppliedVolts = driveSparky.getAppliedOutput();
@@ -117,8 +118,8 @@ public class ModuleIOSparkMax implements ModuleIO {
     @Override
     public void runCharacterization(double volts) {
         if (input.runSysId) {
-            driveSparky.setVoltage(volts);
-            // turnSparky.setVoltage(volts);
+            // driveSparky.setVoltage(volts);
+            turnSparky.setVoltage(volts);
         }
     }
 

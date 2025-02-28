@@ -97,14 +97,14 @@ public class RobotContainer {
 
     //Reseting Gyro and Locking Gyro features
     controller.a().whileTrue(new lockGyro(pigeon));
-    controller.b().whileTrue(drive.resetGyro());
+    // controller.b().whileTrue(drive.resetGyro());
 
     //Testing Sequential stuff
     // controller.x().onTrue(new runReef(elevator, carriage, 0.6, 0.5));
 
     //FYI IF USING SYS ID GO TO MODULEIO AND CHANGE RUNSYSID TO TRUE
     // controller.a().whileTrue(elevator.sysIdRoutine());
-    // controller.b().whileTrue(drive.sysIDSwerve());
+    controller.b().whileTrue(drive.sysIDSwerve());
     // controller.a().whileTrue(elevator.sysIdRoutine());
 
     //PATHFINDING

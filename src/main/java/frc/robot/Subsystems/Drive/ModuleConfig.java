@@ -7,24 +7,22 @@ package frc.robot.Subsystems.Drive;
 public class ModuleConfig {
 
     public Config configure(int index){
-        Config config;
+        Config config = null;
         switch (index) {
             case 0:
-                config = new Config(1, 2, 1, 28.40, false);
-                return config;
+                config = new Config(1, 2, 0, 0.671, false);
+                break;
             case 1:
-                config = new Config(3, 4, 2, 6.24, false); 
-                return config;
+                config = new Config(3, 4, 1, 0.186, false); 
+                break;
             case 2: 
-                config = new Config(5, 6, 3, 20.45, false);
-                return config;
+                config = new Config(5, 6, 2, 0.684, false);
+                break;
             case 3:
-                config = new Config(7, 8, 4, 43.80, false);
-                return config;
-            default:
-                config = new Config(0, 0, 0, 0.0, false); 
-                return config;
+                config = new Config(7, 8, 3, 0.005, false);
+                break;
         }
+        return config;
     }
 
 }

@@ -9,6 +9,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
 
 /** Add your docs here. */
 public class Constants {
@@ -26,7 +27,7 @@ public class Constants {
         public static final double drivekI = 0.0;
         public static final double drivekD = 0.0;
 
-        public static final double turnkP = 1.0;
+        public static final double turnkP = 0.0030629;
         public static final double turnkI = 0.0;
         public static final double turnkD = 0.0;
 
@@ -35,7 +36,7 @@ public class Constants {
         public static final double driveA = 0.0;
 
         public static final double wheelRadius = Units.inchesToMeters(2.00);
-        public static final double trackWidth = Units.inchesToMeters(10.0);
+        public static final double trackWidth = Units.inchesToMeters(16.0);
 
         public static final int driveCurrentLimitAmps = 80;
         public static final int turnCurrentLimitAmps = 40;
@@ -54,8 +55,8 @@ public class Constants {
         };
         
 
-        public static final double maxDriveSpeed = 6.2; //Meters per second
-        public static final double maxAngularspeed = 6; //Figure out max speeds later
+        public static final double maxDriveSpeed = 6.0; //Meters per second
+        public static final double maxAngularspeed = 20.0; //Figure out max speeds later
 
         public enum BOT {
             Protolone,
