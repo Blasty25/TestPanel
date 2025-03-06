@@ -59,17 +59,18 @@ public class Drive extends SubsystemBase {
 
     // MODULE MAP USE FOR DEBUGGING
     /*
-     *       |
+     * |
      * FL(0) | FR(1)
-     *       |
+     * |
      * ------|------
-     *       |
+     * |
      * BL(2) | BR(3)
-     *       |
+     * |
      */
 
     private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DriveConstants.moduletranslations);
-    private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, gyroInputs.yawHeading, firstPositions);
+    private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(kinematics, gyroInputs.yawHeading,
+            firstPositions);
     private final SwerveDrivePoseEstimator pose = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
             firstPositions, new Pose2d());
     private SysIdRoutine routine;
@@ -183,44 +184,42 @@ public class Drive extends SubsystemBase {
         // odometryLock.unlock();
 
         SwerveModulePosition[] positions = modulePositions();
-        if (gyroInputs.isConnected) {
-            rawGyroRotation = gyroInputs.yawHeading;
-        }else{
-            SwerveModulePosition[] deltas = new SwerveModulePosition[4];
-            for (int i = 0; i < 4; i++) {
-                deltas[i] = new SwerveModulePosition(
+        SwerveModulePosition[] deltas = new SwerveModulePosition[4];
+        for (int i = 0; i < 4; i++) {
+            deltas[i] = new SwerveModulePosition(
                     positions[i].distanceMeters - firstPositions[i].distanceMeters,
-                    positions[i].angle
-                );
-            }
-            Twist2d twist = kinematics.toTwist2d(deltas);
-            rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
-            firstPositions = positions;
+                    positions[i].angle);
         }
 
+        if (gyroInputs.isConnected) {
+            rawGyroRotation = gyroInputs.yawHeading;
+        } else {
+            Twist2d twist = kinematics.toTwist2d(deltas);
+            rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+        }
+        firstPositions = positions;
         pose.update(gyroEstimator, positions);
     }
 
-    public Rotation2d getHeading(){
+    public Rotation2d getHeading() {
         return gyroInputs.yawHeading;
     }
 
-    public void getTranlastion(){
+    public void getTranlastion() {
         Pose2d translatedPose = getPose();
         Logger.recordOutput("Drive/Recorded/Pose", translatedPose.getTranslation());
     }
 
     @AutoLogOutput(key = "Drive/Pose")
-    public Pose2d robotPose(){
+    public Pose2d robotPose() {
         return pose.getEstimatedPosition();
     }
 
-    public Command recordPose(){
-        return Commands.runOnce(()->{
+    public Command recordPose() {
+        return Commands.runOnce(() -> {
             getTranlastion();
         });
     }
-
 
     public SwerveModulePosition[] modulePositions() {
         SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
