@@ -16,10 +16,10 @@ public class Constants {
         public static final double LOOP_UPDATE = 0.02;
         public static final DCMotor motor = DCMotor.getKrakenX60(1);
 
-        public static final double driveGearing = 5.14;
-        public static final double driveMOI = 0.02;
+        public static final double driveGearing = 6.746031746031747;
+        public static final double driveMOI = 0.025;
 
-        public static final double turnGearing = 12.8;
+        public static final double turnGearing = 21.428571428571427;
         public static final double turnMOI = 0.005;
 
         public static final double drivekP = 0.06;  //0.8
@@ -34,7 +34,7 @@ public class Constants {
         public static final double driveV = 0.0;
         public static final double driveA = 0.0;
 
-        public static final double wheelRadius = Units.inchesToMeters(2.00);
+        public static final double wheelRadius = Units.inchesToMeters(1.931);
         public static final double trackWidth = Units.inchesToMeters(10.0);
 
         public static final int driveCurrentLimitAmps = 80;
@@ -62,13 +62,8 @@ public class Constants {
             Comp
         }
 
-        public static final BOT type = BOT.Protolone;
+        public static final BOT type = BOT.Comp;
         ///AUTOS
         public static RobotConfig config;
-    }
-
-    public static class CarriageConstants {
-        public static final int carriageId = 22;
-        public static final double maxSpeed = 1.0; //0-1 1 MAX
     }
 }

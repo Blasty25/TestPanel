@@ -4,6 +4,7 @@
 
 package frc.robot.Subsystems.Drive;
 
+import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveDrivetrain.OdometryThread;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -26,7 +27,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     private SparkMax turnSparky;
 
     private AnalogEncoder encoder;
-
+    
     private RelativeEncoder driveEncoder;
     private RelativeEncoder turnEncoder;
 
@@ -91,7 +92,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         inputs.turnCurrent = turnSparky.getOutputCurrent();
 
         inputs.drivePosition = driveEncoder.getPosition();
-        inputs.turnPosition = new Rotation2d(turnEncoder.getPosition());
+        inputs.turnPosition = turnEncoder.getPosition();
 
         inputs.driveVelocity = driveEncoder.getVelocity();
         inputs.turnVelocity = turnEncoder.getVelocity();
@@ -106,8 +107,8 @@ public class ModuleIOSparkMax implements ModuleIO {
     }
 
     @Override
-    public void setTurnMotor(Rotation2d rotation) {
-        turnController.setReference(rotation.getRadians(), ControlType.kPosition);
+    public void setTurnMotor(double rotation) {
+        turnController.setReference(rotation, ControlType.kPosition);
     }
 
     @Override

@@ -4,46 +4,39 @@
 
 package frc.robot.Subsystems.Carriage;
 
+import java.util.function.DoubleSupplier;
+
 import org.littletonrobotics.junction.Logger;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import com.reduxrobotics.sensors.canandcolor.*;
 
 public class CarriageSubsystem extends SubsystemBase {
   
-  CarriageIO io;
-  CarriageIOInputsAutoLogged inputs = new CarriageIOInputsAutoLogged();
-  private Canandcolor color;
-
-  private static CarriageSubsystem instance;
+  private CarriageIO io;
+  private CarriageIOInputsAutoLogged inputs = new CarriageIOInputsAutoLogged();
 
   /** Creates a new CarriageSubsystem. */
   public CarriageSubsystem(CarriageIO carriageIO) {
     io = carriageIO;
-    instance = this;
-    color = new Canandcolor(9);
-  }
-
-public static CarriageSubsystem getInstance() {
-    if (instance == null) {
-      instance = new CarriageSubsystem(new CarriageIOSim());
-    }
-    return instance;
-  }
-
-  public ColorData getColor(){
-    return color.getColor();
   }
   
   public void beamBreak(){
-    double finalColor = color.getBlue() + color.getGreen() + color.getRed();
-    while (finalColor >= 720 && finalColor <= 775) {
-      io.setCarriageVolts(0.1);
+    if (inputs.detected == true) {
+      io.setCarriageVolts(0);
     }
-    io.setCarriageVolts(0);
   }
 
-  
-  public void setVolts(double volts) {
+  public Command setVolts(DoubleSupplier volts) {
+    return new RunCommand(()->{
+      double speed = volts.getAsDouble();
+      Logger.recordOutput("DEBUG/Carriage/LeftTrigger", speed);
+      this.setSpeed(speed);
+    }, this);
+  }
+
+  public void setSpeed(double volts){
     io.setCarriageVolts(volts);
   }
 
@@ -53,7 +46,6 @@ public static CarriageSubsystem getInstance() {
 
   @Override
   public void periodic() {
-    
     io.processInputs(inputs);
     Logger.processInputs("Carriage", inputs);
   }

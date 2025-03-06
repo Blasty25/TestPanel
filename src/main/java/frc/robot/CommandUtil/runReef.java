@@ -6,9 +6,6 @@ package frc.robot.CommandUtil;
 
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Subsystems.Carriage.CarriageSubsystem;
-import frc.robot.Subsystems.Carriage.Commands.RunIntake;
-import frc.robot.Subsystems.Carriage.Commands.RunOuttake;
-import frc.robot.Subsystems.Carriage.Commands.autoIntake;
 import frc.robot.Subsystems.Elevator.Elevator;
 import frc.robot.Subsystems.Elevator.Commands.setPosition;
 
@@ -28,6 +25,6 @@ public class runReef extends SequentialCommandGroup {
     this.speed = speed;
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    addCommands(new setPosition(elevator, height), new RunOuttake(speed));
+    addCommands(new setPosition(elevator, height));
   }
 }

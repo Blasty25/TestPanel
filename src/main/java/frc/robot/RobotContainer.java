@@ -7,18 +7,14 @@ package frc.robot;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.CommandUtil.runReef;
-import frc.robot.Constants.CarriageConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Subsystems.Carriage.CarriageConstants;
 import frc.robot.Subsystems.Carriage.CarriageIOSim;
 import frc.robot.Subsystems.Carriage.CarriageIOSparkMax;
 import frc.robot.Subsystems.Carriage.CarriageIOTalonSRX;
 import frc.robot.Subsystems.Carriage.CarriageSubsystem;
-import frc.robot.Subsystems.Carriage.Commands.RunIntake;
-import frc.robot.Subsystems.Carriage.Commands.RunOuttake;
 import frc.robot.Subsystems.Drive.Drive;
 import frc.robot.Subsystems.Drive.GyroIO;
 import frc.robot.Subsystems.Drive.GyroIOReal;
@@ -28,8 +24,9 @@ import frc.robot.Subsystems.Drive.util.lockGyro;
 import frc.robot.Subsystems.Drive.ModuleIOSim;
 import frc.robot.Subsystems.Drive.ModuleIOSparkMax;
 import frc.robot.Subsystems.Elevator.Elevator;
+import frc.robot.Subsystems.Elevator.ElevatorConstants;
+import frc.robot.Subsystems.Elevator.ElevatorIOReal;
 import frc.robot.Subsystems.Elevator.ElevatorIOSim;
-import frc.robot.Subsystems.Elevator.ElevatorIOSparkMax;
 import frc.robot.Subsystems.Elevator.Commands.setPosition;
 
 public class RobotContainer {
@@ -49,18 +46,18 @@ public class RobotContainer {
               new ModuleIOSparkMax(new ModuleConfig().configure(1)),
               new ModuleIOSparkMax(new ModuleConfig().configure(2)),
               new ModuleIOSparkMax(new ModuleConfig().configure(3)));
-          elevator = new Elevator(new ElevatorIOSparkMax());
+          elevator = new Elevator(new ElevatorIOReal(ElevatorConstants.leftMotorId, ElevatorConstants.rightMotorId));
           carriage = new CarriageSubsystem(new CarriageIOTalonSRX());
           break;
 
         case Comp:
           drive = new Drive(
-              new GyroIOReal(9),
+              new GyroIOReal(0),
               new ModuleIOTalonFX(new ModuleConfig().configure(0)),
               new ModuleIOTalonFX(new ModuleConfig().configure(1)),
               new ModuleIOTalonFX(new ModuleConfig().configure(2)),
               new ModuleIOTalonFX(new ModuleConfig().configure(3)));
-          elevator = new Elevator(new ElevatorIOSparkMax());
+          elevator = new Elevator(new ElevatorIOReal(ElevatorConstants.leftMotorId, ElevatorConstants.rightMotorId));
           carriage = new CarriageSubsystem(new CarriageIOSparkMax());
           break;
       }
@@ -87,22 +84,22 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    controller.rightTrigger().whileTrue(new RunIntake(CarriageConstants.maxSpeed));
-    controller.leftTrigger().whileTrue(new RunOuttake(CarriageConstants.maxSpeed));
+    carriage.setDefaultCommand(carriage.setVolts(()-> controller.getRightTriggerAxis()));
+    carriage.setDefaultCommand(carriage.setVolts(()-> -controller.getLeftTriggerAxis()));
+
 
     controller.povLeft().onTrue(new setPosition(elevator, 0.4));
     controller.povUp().onTrue(new setPosition(elevator, 1.4));
     controller.povRight().onTrue(new setPosition(elevator, 0.6));
     controller.povDown().onTrue(new setPosition(elevator, 0.0));
 
-    //Reseting Gyro and Locking Gyro features
+    // Reseting Gyro and Locking Gyro features
     controller.a().whileTrue(new lockGyro(pigeon));
     controller.b().whileTrue(drive.resetGyro());
 
-    //Testing Sequential stuff
-    controller.x().onTrue(new runReef(elevator, carriage, 0.6, 0.5));
+    controller.y().whileTrue(drive.recordPose());
 
-    //FYI IF USING SYS ID GO TO MODULEIO AND CHANGE RUNSYSID TO TRUE
+    // FYI IF USING SYS ID GO TO MODULEIO AND CHANGE RUNSYSID TO TRUE
     // controller.a().whileTrue(elevator.sysIdRoutine());
     // controller.b().whileTrue(drive.sysIDSwerve());
     // controller.a().whileTrue(elevator.sysIdRoutine());

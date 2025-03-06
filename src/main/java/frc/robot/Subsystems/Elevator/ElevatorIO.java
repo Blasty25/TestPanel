@@ -1,20 +1,32 @@
 package frc.robot.Subsystems.Elevator;
 
+import static edu.wpi.first.units.Units.*;
+
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {
     @AutoLog
     public static class ElevatorIOInputs {
-        public double position = 0.0;
-        public double velocity = 0.0;
+        public Distance position = Meters.zero();
+        public LinearVelocity velocity = MetersPerSecond.zero();
 
-        public double[] voltages = new double[] {};
-        public double[] currents = new double[] {};
+        public Current leftCurrent = Amps.zero();
+        public Temperature leftTemperature = Celsius.zero();
+        public Voltage leftVoltage = Volts.zero();
+
+        public Current rightCurrent = Amps.zero();
+        public Temperature rightTemperature = Celsius.zero();
+        public Voltage rightVoltage = Volts.zero();
     }
 
-    public default void updateInputs(ElevatorIOInputs inputs) {}
+    public void updateInputs(ElevatorIOInputs inputs);
 
-    public default void setPosition(double position, double ffVoltage) {}
+    public void setPosition(Distance height, double ffVoltage);
 
-    public default void reset() {}
+    public void reset();
 }
