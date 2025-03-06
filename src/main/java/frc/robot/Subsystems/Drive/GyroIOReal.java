@@ -4,19 +4,23 @@
 
 package frc.robot.Subsystems.Drive;
 
+import java.util.Queue;
+
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
+import frc.robot.Subsystems.Drive.util.PhoenixOdometryThread;
 
 /** Add your docs here. */
-public class GyroIOReal implements GyroIO{
+public class GyroIOReal implements GyroIO {
     Pigeon2 gyro;
     private StatusSignal<Angle> yaw;
+    private final Queue<Double> yawPositionQueue;
 
-    public GyroIOReal(int gyroID){
+    public GyroIOReal(int gyroID) {
         gyro = new Pigeon2(gyroID);
         yaw = gyro.getYaw();
         gyro.getConfigurator().apply(new Pigeon2Configuration());
@@ -24,6 +28,7 @@ public class GyroIOReal implements GyroIO{
         yaw.setUpdateFrequency(250);
         gyro.optimizeBusUtilization();
         gyro.reset();
+        yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(gyro.getYaw());
     }
 
     @Override
@@ -32,10 +37,13 @@ public class GyroIOReal implements GyroIO{
             inputs.isConnected = true;
         }
         inputs.yawHeading = gyro.getRotation2d();
+        inputs.odometryYawPositions = yawPositionQueue.stream()
+                .map((Double value) -> Rotation2d.fromDegrees(value))
+                .toArray(Rotation2d[]::new);
     }
 
     @Override
-    public void setGyro(){
+    public void setGyro() {
         Rotation2d lockYaw = gyro.getRotation2d();
         gyro.setYaw(lockYaw.getRadians());
     }

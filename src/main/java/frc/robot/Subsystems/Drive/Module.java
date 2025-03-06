@@ -6,13 +6,14 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.DriveConstants;
 
 public class Module {
     private final int index;
     private final ModuleIO io;
     private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
-
+    private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
     private final SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(DriveConstants.driveS, DriveConstants.driveV, DriveConstants.driveA);
 
 
@@ -29,26 +30,25 @@ public class Module {
 
     // Returns the Angle of the Module
     public Rotation2d getAngle() {
-        return inputs.turnPosition;
+        return new Rotation2d(inputs.turnPosition);
     }
 
     // Returns the drive position in Meters
     public double getPositionMeters() {
-        return inputs.drivePosition * DriveConstants.wheelRadius;
+        return (inputs.drivePosition * (Math.PI * 2));
     }
 
     public void setState(SwerveModuleState state){
-      state.optimize(inputs.turnPosition);
+      state.optimize(getAngle());
       io.setDriveMotor(state.speedMetersPerSecond, driveFeedforward.calculate(state.speedMetersPerSecond));
-      io.setTurnMotor(state.angle);
-      inputs.driveVelocity = state.speedMetersPerSecond;
-      inputs.turnPosition = state.angle;
+      io.setTurnMotor(state.angle.getRadians());
     }
 
     public void xState(SwerveModuleState state){
-        state.optimize(inputs.turnPosition);
-        io.setTurnMotor(state.angle);
-        inputs.turnPosition = state.angle;
+        state.optimize(getAngle());
+        state.cosineScale(new Rotation2d(inputs.turnPosition));
+        io.setTurnMotor(state.angle.getRadians());
+        io.setDriveMotor(state.speedMetersPerSecond / DriveConstants.wheelRadius, driveFeedforward.calculate(state.speedMetersPerSecond));
       }
 
     public double getVelocityMetersPerSec() {
@@ -59,8 +59,7 @@ public class Module {
         return new SwerveModulePosition(getPositionMeters(), getAngle());
     }
 
-    public SwerveModuleState 
-    getState() {
+    public SwerveModuleState getState() {
         return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
     }
 
@@ -70,6 +69,14 @@ public class Module {
 
     public void setBrakeMode(boolean enabled) {
         io.setBrakeMode(enabled);
+    }
+
+    public double[] getOdometryTimestamps(){
+        return inputs.odometryTimestamps;
+    }
+
+    public SwerveModulePosition[] getOdometryPositions(){
+        return odometryPositions;
     }
 
 }

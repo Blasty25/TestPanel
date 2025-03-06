@@ -13,11 +13,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public interface GyroIO {
     @AutoLog
     public static class GyroIOInputs {
-        public Pose2d RobotPose = new Pose2d(20, 20, new Rotation2d());
+        public Pose2d RobotPose = new Pose2d();
         public boolean isConnected = false;
         public double heading = 0.0;
         public Rotation2d yawHeading = new Rotation2d();
         public double gyroVoltage = 0.0;
+        public Rotation2d[] odometryYawPositions = new Rotation2d[] {};
     }
 
     public default void updateInputs(GyroIOInputs inputs) {
@@ -25,6 +26,5 @@ public interface GyroIO {
 
     public default void setGyro() {}
 
-    public default void reset() {
-    }
+    public default void reset() {}
 }

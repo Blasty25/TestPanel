@@ -21,7 +21,7 @@ public interface ModuleIO {
         public double driveFeedForward = 0.0;
         public double driveAppliedVolts = 0.0;
 
-        public Rotation2d turnPosition = new Rotation2d();
+        public double turnPosition = 0.0;
         public double turnEncoder = 0.0;
         public double turnCurrent = 0.0;
         public double turnVelocity = 0.0;
@@ -33,8 +33,6 @@ public interface ModuleIO {
         public Rotation2d[] odometryTurnPositions = new Rotation2d[] {};
 
         public double[] driveVoltage = new double[] {};
-
-        public double DEBUG = 0.0;
     }
 
     public default void updateInputs(ModuleIOInputs inputs) {
@@ -43,7 +41,7 @@ public interface ModuleIO {
     public default void setDriveMotor(double positionRad, double feedForward) {
     }
 
-    public default void setTurnMotor(Rotation2d rotation) {
+    public default void setTurnMotor(double rotation) {
     }
 
     public default void resetMotors(double position) {

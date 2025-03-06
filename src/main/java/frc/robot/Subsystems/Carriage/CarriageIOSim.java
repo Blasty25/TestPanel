@@ -10,15 +10,14 @@ public class CarriageIOSim implements CarriageIO{
 
 	public CarriageIOSim() {
 		carriageMotorSim = new DCMotorSim(LinearSystemId.createDCMotorSystem(0.02, 0.02), DCMotor.getNEO(1));
-
 	}
 
 	@Override
 	public void processInputs(CarriageIOInputs inputs) {
 		carriageMotorSim.update(0.02);
 
-		inputs.carriageRPM = carriageMotorSim.getAngularVelocityRPM();
 		inputs.carriagesVolts = carriageMotorSim.getInputVoltage();
+		inputs.carriageAmps = carriageMotorSim.getCurrentDrawAmps();
 	}
 
 	@Override
@@ -27,19 +26,7 @@ public class CarriageIOSim implements CarriageIO{
 	}
 
 	@Override
-	public void setCarriageRPM(double rpm) {
-		System.out.println(rpm);
-		carriageMotorSim.setInput(rpm);
-	}
-
-	@Override
-	public void setCarriagePID(double kP, double kI, double kD) {
-		
-	}
-
-	@Override
 	public void settoZero() {
-		carriageMotorSim.setAngularVelocity(0);
-		carriageMotorSim.setInput(0);
+		carriageMotorSim.setInputVoltage(0);
 	}
 }
