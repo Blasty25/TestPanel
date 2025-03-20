@@ -1,63 +1,58 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+// Copyright 2021-2025 FRC 6328
+// http://github.com/Mechanical-Advantage
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// version 3 as published by the Free Software Foundation or
+// available in the root directory of this project.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
 
-package frc.robot.Subsystems.Drive;
-
-import org.littletonrobotics.junction.AutoLog;
+package frc.robot.Subsystems.drive;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import org.littletonrobotics.junction.AutoLog;
 
-/** Add your docs here. */
 public interface ModuleIO {
+  @AutoLog
+  public static class ModuleIOInputs {
+    public boolean driveConnected = false;
+    public double drivePositionRad = 0.0;
+    public double driveVelocityRadPerSec = 0.0;
+    public double driveAppliedVolts = 0.0;
+    public double driveCurrentAmps = 0.0;
+    public double driveTemperatureCelsius = 0.0;
 
-    @AutoLog
-    public static class ModuleIOInputs {
-        public boolean runSysId = false;
+    public boolean turnConnected = false;
+    public boolean turnEncoderConnected = false;
+    public Rotation2d turnAbsolutePosition = new Rotation2d();
+    public Rotation2d turnPosition = new Rotation2d();
+    public double turnVelocityRadPerSec = 0.0;
+    public double turnAppliedVolts = 0.0;
+    public double turnCurrentAmps = 0.0;
+    public double turnTemperatureCelsius = 0.0;
+    public double encoderOffset = 0.0;
 
-        public double drivePosition = 0.0;
-        public double driveCurrent = 0.0;
-        public double driveVelocity = 0.0;
-        public double driveFeedForward = 0.0;
-        public double driveAppliedVolts = 0.0;
+    public double[] odometryTimestamps = new double[] {};
+    public double[] odometryDrivePositionsRad = new double[] {};
+    public Rotation2d[] odometryTurnPositions = new Rotation2d[] {};
+  }
 
-        public double turnPosition = 0.0;
-        public double turnEncoder = 0.0;
-        public double turnCurrent = 0.0;
-        public double turnVelocity = 0.0;
-        public double turnFeedforward = 0.0;
-        public double turnAppliedVolts = 0.0;
+  /** Updates the set of loggable inputs. */
+  public default void updateInputs(ModuleIOInputs inputs) {}
 
-        public double[] odometryTimestamps = new double[] {};
-        public double[] odometryDrivePositionsRad = new double[] {};
-        public Rotation2d[] odometryTurnPositions = new Rotation2d[] {};
+  /** Run the drive motor at the specified open loop value. */
+  public default void setDriveOpenLoop(double output) {}
 
-        public double[] driveVoltage = new double[] {};
-    }
+  /** Run the turn motor at the specified open loop value. */
+  public default void setTurnOpenLoop(double output) {}
 
-    public default void updateInputs(ModuleIOInputs inputs) {
-    }
+  /** Run the drive motor at the specified velocity. */
+  public default void setDriveVelocity(double velocityRadPerSec) {}
 
-    public default void setDriveMotor(double positionRad, double feedForward) {
-    }
-
-    public default void setTurnMotor(double rotation) {
-    }
-
-    public default void resetMotors(double position) {
-    }
-
-    public default void getHeading(double heading) {
-    }
-
-    public default void setBrakeMode(boolean enabled) {
-    }
-
-    public default void runTurnPosition(Rotation2d rotation) {
-    }
-
-    public default void runCharacterization(double volts){
-
-    }
-
+  /** Run the turn motor to the specified rotation. */
+  public default void setTurnPosition(Rotation2d rotation) {}
 }

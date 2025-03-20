@@ -65,5 +65,6 @@ public class Constants {
         public static final BOT type = BOT.Comp;
         ///AUTOS
         public static RobotConfig config;
+        public static final boolean tuningMode = true;
     }
 }

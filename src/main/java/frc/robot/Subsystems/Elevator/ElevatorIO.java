@@ -1,32 +1,43 @@
-package frc.robot.Subsystems.Elevator;
+package frc.robot.Subsystems.elevator;
 
-import static edu.wpi.first.units.Units.*;
-
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Temperature;
-import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Subsystems.elevator.Elevator.ElevatorSetpoint;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {
-    @AutoLog
-    public static class ElevatorIOInputs {
-        public Distance position = Meters.zero();
-        public LinearVelocity velocity = MetersPerSecond.zero();
+  @AutoLog
+  public static class ElevatorIOInputs {
+    public double positionMeters = 0.0;
+    public ElevatorSetpoint setpoint = ElevatorSetpoint.ZERO;
+    public double targetPositionMeters = 0.0;
+    public double profiledTargetMeters = 0.0;
+    public boolean limitSwitch = false;
 
-        public Current leftCurrent = Amps.zero();
-        public Temperature leftTemperature = Celsius.zero();
-        public Voltage leftVoltage = Volts.zero();
+    public double motorAppliedVolts = 0.0;
+    public double motorCurrentAmps = 0.0;
+    public double motorVelocityMetersPerSecond = 0.0;
 
-        public Current rightCurrent = Amps.zero();
-        public Temperature rightTemperature = Celsius.zero();
-        public Voltage rightVoltage = Volts.zero();
-    }
+    public double followerAppliedVolts = 0.0;
+    public double followerCurrentAmps = 0.0;
+    public double followerVelocityMetersPerSecond = 0.0;
 
-    public void updateInputs(ElevatorIOInputs inputs);
+    public boolean motorConnected = false;
+    public double motorTempCelsius = 0.0;
 
-    public void setPosition(Distance height, double ffVoltage);
+    public boolean followerConnected = false;
+    public double followerTempCelsius = 0.0;
+  }
 
-    public void reset();
+  public default void updateInputs(final ElevatorIOInputsAutoLogged inputs) {}
+
+  public default void setVoltage(final double voltage) {}
+
+  public default void stop() {
+    setVoltage(0);
+  }
+
+  public default void resetEncoder(final double position) {}
+
+  public default void resetEncoder() {
+    resetEncoder(0.0);
+  }
 }
