@@ -53,15 +53,15 @@ public class DriveConstants {
             new Translation2d(-trackWidth, -trackWidth) // BR
     };
 
-    public static final double maxDriveSpeed = 1; // Meters per second
-    public static final double maxAngularspeed = 2; // Figure out max speeds later
+    public static final double maxDriveSpeed = 4.75; // Meters per second
+    public static final double maxAngularspeed = 4.75; // Figure out max speeds later
 
     public enum BOT {
         Protolone,
         Comp
     }
 
-    public static final BOT type = BOT.Protolone;
+    public static final BOT type = BOT.Comp;
     /// AUTOS
     public static RobotConfig config;
 

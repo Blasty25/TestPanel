@@ -12,23 +12,25 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
-import frc.robot.Subsystems.Drive.util.PhoenixOdometryThread;
+import edu.wpi.first.units.measure.AngularVelocity;
+import frc.robot.Subsystems.Drive.util.SparkOdometryThread;
 
 /** Add your docs here. */
 public class GyroIOReal implements GyroIO {
-    Pigeon2 gyro;
-    private StatusSignal<Angle> yaw;
+    private final Pigeon2 gyro = new Pigeon2(9, "rio");
+    private final StatusSignal<Angle> yaw = gyro.getYaw();
     private final Queue<Double> yawPositionQueue;
+    private final Queue<Double> yawTimestampQueue;
+    private final StatusSignal<AngularVelocity> yawVelocity = gyro.getAngularVelocityZWorld();
 
     public GyroIOReal(int gyroID) {
-        gyro = new Pigeon2(gyroID);
-        yaw = gyro.getYaw();
         gyro.getConfigurator().apply(new Pigeon2Configuration());
         gyro.getConfigurator().setYaw(0.0);
-        yaw.setUpdateFrequency(250);
+        yaw.setUpdateFrequency(100.0);
+        yawVelocity.setUpdateFrequency(50.0);
         gyro.optimizeBusUtilization();
-        gyro.reset();
-        yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(gyro.getYaw());
+        yawTimestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
+        yawPositionQueue = SparkOdometryThread.getInstance().registerSignal(yaw::getValueAsDouble);
     }
 
     @Override
@@ -40,21 +42,23 @@ public class GyroIOReal implements GyroIO {
         inputs.odometryYawPositions = yawPositionQueue.stream()
                 .map((Double value) -> Rotation2d.fromDegrees(value))
                 .toArray(Rotation2d[]::new);
+        inputs.odometryYawTimestamps = yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+        yawTimestampQueue.clear();
+        yawPositionQueue.clear();
     }
 
     @Override
     public void setGyro() {
         Rotation2d lockYaw = gyro.getRotation2d();
-        gyro.setYaw(lockYaw.getRadians());
+        gyro.setYaw(90);
     }
 
     public double gyroAngle() {
         return gyro.getRotation2d().getRadians();
     }
 
-    @Override
     public void reset() {
-        gyro.reset();
+        gyro.setYaw(0);
     }
 
 }

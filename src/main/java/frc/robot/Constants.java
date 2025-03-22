@@ -4,11 +4,15 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
+
 import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.DistanceUnit;
+import edu.wpi.first.units.measure.Distance;
 
 /** Add your docs here. */
 public class Constants {
@@ -22,7 +26,7 @@ public class Constants {
         public static final double turnGearing = 21.428571428571427;
         public static final double turnMOI = 0.005;
 
-        public static final double drivekP = 0.06;  //0.8
+        public static final double drivekP = 0.06; // 0.8
         public static final double drivekI = 0.0;
         public static final double drivekD = 0.0;
 
@@ -34,36 +38,38 @@ public class Constants {
         public static final double driveV = 0.0;
         public static final double driveA = 0.0;
 
-        public static final double wheelRadius = Units.inchesToMeters(1.931);
+        public static final Distance wheelRadius = Distance.ofBaseUnits(1.931, Inches);
         public static final double trackWidth = Units.inchesToMeters(10.0);
+        public static final double negTrack = Units.inchesToMeters(10.0);
+        public static final double posTrack = Units.inchesToMeters(10.0);
 
         public static final int driveCurrentLimitAmps = 80;
         public static final int turnCurrentLimitAmps = 40;
 
-        public static final double drivePositionConversionFactor = 2.0 * Math.PI * wheelRadius / driveGearing;
+        public static final double drivePositionConversionFactor = 2.0 * Math.PI * wheelRadius.in(Inches)
+                / driveGearing;
         public static final double turnPositionConversionFactor = 2.0 * Math.PI / turnGearing;
 
         public static final double driveVelocityFactor = drivePositionConversionFactor / 60.0;
         public static final double turnVelocityFactor = turnPositionConversionFactor / 60.0;
 
         public static final Translation2d[] moduletranslations = {
-                new Translation2d(trackWidth, trackWidth),  //FL
-                new Translation2d(trackWidth, -trackWidth), //FR
-                new Translation2d(-trackWidth, trackWidth), //BL
-                new Translation2d(-trackWidth, -trackWidth) //BR
+                new Translation2d(trackWidth, trackWidth), // FL
+                new Translation2d(trackWidth, -trackWidth), // FR
+                new Translation2d(-trackWidth, trackWidth), // BL
+                new Translation2d(-trackWidth, -trackWidth) // BR
         };
-        
 
-        public static final double maxDriveSpeed = 4.2; //Meters per second
-        public static final double maxAngularspeed = 4; //Figure out max speeds later
+        public static final double maxDriveSpeed = 4.2; // Meters per second
+        public static final double maxAngularspeed = 4; // Figure out max speeds later
 
         public enum BOT {
             Protolone,
             Comp
         }
 
-        public static final BOT type = BOT.Comp;
-        ///AUTOS
+        public static final BOT type = BOT.Protolone;
+        /// AUTOS
         public static RobotConfig config;
         public static final boolean tuningMode = false;
     }

@@ -1,12 +1,14 @@
 package frc.robot.Subsystems.Drive;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.DriveConstants;
 
 public class Module {
@@ -23,9 +25,20 @@ public class Module {
 
     }
 
-    public void updateInputs() {
+    public void periodic(){
         io.updateInputs(inputs);
-        Logger.processInputs("Drive/Module" + index, inputs);
+        Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+    
+        // Calculate positions for odometry
+        int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
+        odometryPositions = new SwerveModulePosition[sampleCount];
+        for (int i = 0; i < sampleCount; i++) {
+          double positionMeters =
+              inputs.odometryDrivePositionsRad[i]
+                  * DriveConstants.wheelRadius.in(Inches);
+          Rotation2d angle = inputs.odometryTurnPositions[i];
+          odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
+        }
     }
 
     // Returns the Angle of the Module
@@ -35,24 +48,26 @@ public class Module {
 
     // Returns the drive position in Meters
     public double getPositionMeters() {
-        return (inputs.drivePosition * (Math.PI * 2));
+        return (inputs.drivePosition);
     }
 
     public void setState(SwerveModuleState state){
       state.optimize(getAngle());
-      io.setDriveMotor(state.speedMetersPerSecond, driveFeedforward.calculate(state.speedMetersPerSecond));
+      state.cosineScale(getAngle());
+      io.setDriveMotor(state.speedMetersPerSecond / DriveConstants.wheelRadius.in(Inches), driveFeedforward.calculate(state.speedMetersPerSecond));
       io.setTurnMotor(state.angle.getRadians());
+      Logger.recordOutput("Drive/Optimzied", state);
     }
 
     public void xState(SwerveModuleState state){
         state.optimize(getAngle());
         state.cosineScale(new Rotation2d(inputs.turnPosition));
         io.setTurnMotor(state.angle.getRadians());
-        io.setDriveMotor(state.speedMetersPerSecond / DriveConstants.wheelRadius, driveFeedforward.calculate(state.speedMetersPerSecond));
+        io.setDriveMotor(state.speedMetersPerSecond / DriveConstants.wheelRadius.in(Meters), driveFeedforward.calculate(state.speedMetersPerSecond));
       }
 
     public double getVelocityMetersPerSec() {
-        return inputs.driveVelocity * DriveConstants.wheelRadius;
+        return inputs.driveVelocity * DriveConstants.wheelRadius.in(Inches);
     }
 
     public SwerveModulePosition getPosition() {

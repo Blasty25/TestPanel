@@ -8,7 +8,7 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.CommandUtil.runReef;
+// import frc.robot.CommandUtil.runReef;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Subsystems.Carriage.CarriageConstants;
 import frc.robot.Subsystems.Carriage.CarriageIOSim;
@@ -19,48 +19,32 @@ import frc.robot.Subsystems.Drive.Drive;
 import frc.robot.Subsystems.Drive.GyroIO;
 import frc.robot.Subsystems.Drive.GyroIOReal;
 import frc.robot.Subsystems.Drive.ModuleConfig;
-import frc.robot.Subsystems.Drive.ModuleIOTalonFX;
 import frc.robot.Subsystems.Drive.util.lockGyro;
 import frc.robot.Subsystems.Drive.ModuleIOSim;
 import frc.robot.Subsystems.Drive.ModuleIOSparkMax;
-import frc.robot.Subsystems.Elevator.Elevator;
-import frc.robot.Subsystems.Elevator.ElevatorConstants;
-import frc.robot.Subsystems.Elevator.ElevatorIOReal;
-import frc.robot.Subsystems.Elevator.ElevatorIOSim;
-import frc.robot.Subsystems.Elevator.Commands.setPosition;
+// import frc.robot.Subsystems.Elevator.Elevator;
+// import frc.robot.Subsystems.Elevator.ElevatorConstants;
+// import frc.robot.Subsystems.Elevator.ElevatorIOReal;
+// import frc.robot.Subsystems.Elevator.ElevatorIOSim;
+// import frc.robot.Subsystems.Elevator.Commands.setPosition;
 
 public class RobotContainer {
   private Drive drive;
-  private Elevator elevator;
+  // private Elevator elevator;
   private CarriageSubsystem carriage;
   private GyroIOReal pigeon;
   private CommandXboxController controller = new CommandXboxController(0);
 
   public RobotContainer() {
     if (Robot.isReal()) {
-      switch (DriveConstants.type) {
-        case Protolone:
           drive = new Drive(
               new GyroIOReal(9),
               new ModuleIOSparkMax(new ModuleConfig().configure(0)),
               new ModuleIOSparkMax(new ModuleConfig().configure(1)),
               new ModuleIOSparkMax(new ModuleConfig().configure(2)),
               new ModuleIOSparkMax(new ModuleConfig().configure(3)));
-          elevator = new Elevator(new ElevatorIOReal(ElevatorConstants.leftMotorId, ElevatorConstants.rightMotorId));
-          carriage = new CarriageSubsystem(new CarriageIOTalonSRX());
-          break;
-
-        case Comp:
-          drive = new Drive(
-              new GyroIOReal(0),
-              new ModuleIOTalonFX(new ModuleConfig().configure(0)),
-              new ModuleIOTalonFX(new ModuleConfig().configure(1)),
-              new ModuleIOTalonFX(new ModuleConfig().configure(2)),
-              new ModuleIOTalonFX(new ModuleConfig().configure(3)));
-          elevator = new Elevator(new ElevatorIOReal(ElevatorConstants.leftMotorId, ElevatorConstants.rightMotorId));
-          carriage = new CarriageSubsystem(new CarriageIOSparkMax());
-          break;
-      }
+          // elevator = new Elevator(new ElevatorIOReal(ElevatorConstants.leftMotorId, ElevatorConstants.rightMotorId));
+          // carriage = new CarriageSubsystem(new CarriageIOTalonSRX());
 
     } else {
       drive = new Drive(
@@ -70,7 +54,7 @@ public class RobotContainer {
           new ModuleIOSim(),
           new ModuleIOSim(),
           new ModuleIOSim());
-      elevator = new Elevator(new ElevatorIOSim());
+      // elevator = new Elevator(new ElevatorIOSim());
       carriage = new CarriageSubsystem(new CarriageIOSim());
     }
 
@@ -79,23 +63,25 @@ public class RobotContainer {
 
   private void configureBindings() {
     drive.setDefaultCommand(
-        drive.fieldOriantedDrive(
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
+        drive.joystickDrive(
+            () -> controller.getLeftY(),
+            () -> controller.getLeftX(),
+            () -> -controller.getRightX(),
+            () -> 0.1,
+            () -> 1));
 
-    carriage.setDefaultCommand(carriage.setVolts(()-> controller.getRightTriggerAxis()));
-    carriage.setDefaultCommand(carriage.setVolts(()-> -controller.getLeftTriggerAxis()));
+    // carriage.setDefaultCommand(carriage.setVolts(()-> controller.getRightTriggerAxis()));
+    // carriage.setDefaultCommand(carriage.setVolts(()-> -controller.getLeftTriggerAxis()));
 
 
-    controller.povLeft().onTrue(new setPosition(elevator, 0.4));
-    controller.povUp().onTrue(new setPosition(elevator, 1.4));
-    controller.povRight().onTrue(new setPosition(elevator, 0.6));
-    controller.povDown().onTrue(new setPosition(elevator, 0.0));
+    // controller.povLeft().onTrue(new setPosition(elevator, 0.4));
+    // controller.povUp().onTrue(new setPosition(elevator, 1.4));
+    // controller.povRight().onTrue(new setPosition(elevator, 0.6));
+    // controller.povDown().onTrue(new setPosition(elevator, 0.0));
 
     // Reseting Gyro and Locking Gyro features
-    controller.a().whileTrue(new lockGyro(pigeon));
-    controller.b().whileTrue(drive.resetGyro());
+    controller.a().onTrue(new lockGyro(pigeon));
+    controller.b().onTrue(drive.resetGyro());
 
     controller.y().whileTrue(drive.recordPose());
 
@@ -106,6 +92,6 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return new PathPlannerAuto("path");
+    return new PathPlannerAuto("middle");
   }
 }
