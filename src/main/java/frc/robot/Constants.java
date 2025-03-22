@@ -13,6 +13,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /** Add your docs here. */
 public class Constants {
@@ -72,5 +73,7 @@ public class Constants {
         /// AUTOS
         public static RobotConfig config;
         public static final boolean tuningMode = false;
+
+        public static final CommandXboxController controller = new CommandXboxController(0);
     }
 }

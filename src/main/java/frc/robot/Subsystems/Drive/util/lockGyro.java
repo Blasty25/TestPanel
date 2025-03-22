@@ -2,10 +2,10 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.Subsystems.Drive.util;
+package frc.robot.Subsystems.drive.util;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Subsystems.Drive.GyroIOReal;
+import frc.robot.Subsystems.drive.GyroIOReal;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class lockGyro extends Command {

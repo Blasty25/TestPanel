@@ -2,13 +2,13 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.Subsystems.Drive.util;
+package frc.robot.Subsystems.drive.util;
 
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
-import frc.robot.Subsystems.Drive.Drive;
+import frc.robot.Subsystems.drive.Drive;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.Subsystems.Drive.util;
+package frc.robot.Subsystems.drive.util;
 
 import com.ctre.phoenix6.StatusCode;
 import java.util.function.Supplier;

@@ -1,23 +1,25 @@
-package frc.robot.Subsystems.Drive;
+package frc.robot.Subsystems.drive;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.opencv.ml.KNearest;
 
-import com.ctre.phoenix6.swerve.SwerveModule;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.HolonomicDriveController;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -26,12 +28,15 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
@@ -44,7 +49,8 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Subsystems.Drive.util.SparkOdometryThread;
+import frc.robot.Subsystems.drive.pathfinding.PoseAllignment;
+import frc.robot.Subsystems.drive.util.SparkOdometryThread;
 
 /** Add your docs here. */
 public class Drive extends SubsystemBase {
@@ -69,7 +75,7 @@ public class Drive extends SubsystemBase {
     private final ModuleIOInputsAutoLogged moduleInputs = new ModuleIOInputsAutoLogged();
     public static final Lock odometryLock = new ReentrantLock();
     private Rotation2d rawGyroRotation = new Rotation2d();
-
+    private PoseAllignment poseAllignment = new PoseAllignment();
     private Rotation2d gyroEstimator = new Rotation2d();
     private SwerveModulePosition[] firstPositions = new SwerveModulePosition[] {
             new SwerveModulePosition(),
@@ -77,6 +83,20 @@ public class Drive extends SubsystemBase {
             new SwerveModulePosition(),
             new SwerveModulePosition()
     };
+
+    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DriveConstants.moduletranslations);
+    private final SwerveDrivePoseEstimator pose = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
+            firstPositions, new Pose2d());
+
+    public TrajectoryConfig trajectoryConfig = new TrajectoryConfig(
+            LinearVelocity.ofBaseUnits(4.30, MetersPerSecond),
+            LinearAcceleration.ofBaseUnits(4.99, MetersPerSecondPerSecond))
+            .setKinematics(kinematics)
+            .setReversed(false)
+            .setStartVelocity(0.3)
+            .setEndVelocity(3.0);
+
+    public HolonomicDriveController trajDriveController = new HolonomicDriveController(new PIDController(1, 0, 0), new PIDController(1, 0, 0), new ProfiledPIDController(1, 0, 0, new Constraints(1, 1)));
 
     // MODULE MAP USE FOR DEBUGGING
     /*
@@ -89,9 +109,6 @@ public class Drive extends SubsystemBase {
      * |
      */
 
-    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DriveConstants.moduletranslations);
-    private final SwerveDrivePoseEstimator pose = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
-            firstPositions, new Pose2d());
     private SysIdRoutine routine;
 
     public Drive(GyroIO gyroIO, ModuleIO flModuleIO, ModuleIO frModuleIO, ModuleIO blModuleIO, ModuleIO brModuleIO) {
@@ -282,7 +299,6 @@ public class Drive extends SubsystemBase {
         return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
     }
 
-
     private static Translation2d getLinearVelocityFromJoysticks(double x, double y, double deadband) {
         // Apply deadband
         double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), deadband);
@@ -312,7 +328,7 @@ public class Drive extends SubsystemBase {
                             deadbandSupplier.getAsDouble());
 
                     // Apply rotation deadband
-                    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), deadbandSupplier.getAsDouble());
+                    double omega = MathUtil.applyDeadband(-omegaSupplier.getAsDouble(), deadbandSupplier.getAsDouble());
 
                     // Square rotation value for more precise control
                     omega = Math.copySign(omega * omega, omega);
@@ -358,6 +374,26 @@ public class Drive extends SubsystemBase {
                 routine.quasistatic(SysIdRoutine.Direction.kReverse).until(() -> moduleInputs.drivePosition < 0.1),
                 routine.dynamic(SysIdRoutine.Direction.kForward).until(() -> moduleInputs.drivePosition > 1),
                 routine.dynamic(SysIdRoutine.Direction.kReverse).until(() -> moduleInputs.drivePosition < 0.1));
+    }
+
+    public Command followTraj() {
+        return new RunCommand(
+                () -> {
+                    Pose2d robotPose = pose.getEstimatedPosition();
+                    Pose2d target = robotPose.nearest(poseAllignment.redLeft);
+
+                    Trajectory traj = TrajectoryGenerator.generateTrajectory(
+                            robotPose, List.of(), target, trajectoryConfig);
+
+                    Trajectory.State desiredState = traj.sample(traj.getTotalTimeSeconds());
+                    Logger.recordOutput("Drive/PID/Align", target);
+                    ChassisSpeeds zoom = trajDriveController.calculate(robotPose, desiredState, target.getRotation());
+                    this.autoDrive(zoom);
+                    if (trajDriveController.atReference()) {
+                        this.autoDrive(new ChassisSpeeds());
+                    }
+                },
+                this);
     }
 
 }

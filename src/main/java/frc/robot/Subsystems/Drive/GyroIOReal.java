@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.Subsystems.Drive;
+package frc.robot.Subsystems.drive;
 
 import java.util.Queue;
 
@@ -13,7 +13,7 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import frc.robot.Subsystems.Drive.util.SparkOdometryThread;
+import frc.robot.Subsystems.drive.util.SparkOdometryThread;
 
 /** Add your docs here. */
 public class GyroIOReal implements GyroIO {
