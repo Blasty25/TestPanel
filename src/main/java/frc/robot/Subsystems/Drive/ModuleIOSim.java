@@ -1,5 +1,7 @@
 package frc.robot.Subsystems.drive;
 
+import java.util.Random;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -19,20 +21,14 @@ public class ModuleIOSim implements ModuleIO {
 
         private double driveFF = 0.0;
 
-        private static final double DRIVE_KP = 0.05;
-        private static final double DRIVE_KD = 0.0;
-        private static final double DRIVE_KS = 0.0;
-        private static final double DRIVE_KV_ROT = 0.91035; // Same units as TunerConstants: (volt * secs) / rotation
-        private static final double DRIVE_KV = 1.0 / Units.rotationsToRadians(1.0 / DRIVE_KV_ROT);
-        private static final double TURN_KP = 8.0;
-        private static final double TURN_KD = 0.0;
 
-        private PIDController drivePID = new PIDController(DRIVE_KP, 0.0,
-                        DRIVE_KD);
 
-        private PIDController turnPID = new PIDController(TURN_KP, 0.0,
-                        TURN_KD);
+        private PIDController drivePID = new PIDController(DriveConstants.drivekP, 0.0,
+                        DriveConstants.drivekD);
 
+        private PIDController turnPID = new PIDController(DriveConstants.turnkP, 0.0,
+                        DriveConstants.turnkD);
+ 
         public ModuleIOSim() {
                 driveMotor = new DCMotorSim(
                                 LinearSystemId.createDCMotorSystem(DriveConstants.motor, DriveConstants.driveMOI,
@@ -62,7 +58,7 @@ public class ModuleIOSim implements ModuleIO {
                 inputs.drivePosition = driveMotor.getAngularPositionRad();
                 inputs.driveVelocity = driveMotor.getAngularVelocityRadPerSec();
 
-                inputs.turnPosition = turnMotor.getAngularPositionRad();
+                inputs.turnPosition = new Rotation2d(turnMotor.getAngularPositionRad());
                 inputs.turnVelocity = turnMotor.getAngularVelocityRadPerSec();
 
                 // Set Simulation Stuff
@@ -76,12 +72,12 @@ public class ModuleIOSim implements ModuleIO {
                 // matter)
                 inputs.odometryTimestamps = new double[] { Timer.getFPGATimestamp() };
                 inputs.odometryDrivePositionsRad = new double[] { inputs.drivePosition };
-                inputs.odometryTurnPositions = new Rotation2d[] { new Rotation2d(inputs.turnPosition) };
+                inputs.odometryTurnPositions = new Rotation2d[] { inputs.turnPosition };
         }
 
         @Override
         public void setDriveMotor(double velocity, double feedforward) {
-                driveFF = DRIVE_KS * Math.signum(velocity) + DRIVE_KV * velocity;
+                driveFF = feedforward;
                 drivePID.setSetpoint(velocity);
         }
 

@@ -96,7 +96,8 @@ public class Drive extends SubsystemBase {
             .setStartVelocity(0.3)
             .setEndVelocity(3.0);
 
-    public HolonomicDriveController trajDriveController = new HolonomicDriveController(new PIDController(1, 0, 0), new PIDController(1, 0, 0), new ProfiledPIDController(1, 0, 0, new Constraints(1, 1)));
+    public HolonomicDriveController trajDriveController = new HolonomicDriveController(new PIDController(1, 0, 0),
+            new PIDController(1, 0, 0), new ProfiledPIDController(1, 0, 0, new Constraints(1, 1)));
 
     // MODULE MAP USE FOR DEBUGGING
     /*
@@ -120,6 +121,8 @@ public class Drive extends SubsystemBase {
         modules[3] = new Module(brModuleIO, 3);
 
         SparkOdometryThread.getInstance().start();
+
+        this.autoDrive(new ChassisSpeeds());
 
         // AUTOS PATH PLANNER
         try {
@@ -219,6 +222,10 @@ public class Drive extends SubsystemBase {
         }
         odometryLock.unlock();
 
+        if (DriverStation.isTeleopEnabled()) {
+            this.autoDrive(new ChassisSpeeds());
+        }
+
         // Update odometry
         double[] sampleTimestamps = modules[0].getOdometryTimestamps(); // All signals are sampled together
         int sampleCount = sampleTimestamps.length;
@@ -291,26 +298,12 @@ public class Drive extends SubsystemBase {
 
     /** Returns the maximum linear speed in meters per sec. */
     public double getMaxLinearSpeedMetersPerSec() {
-        return LinearVelocity.ofBaseUnits(4.75, MetersPerSecond).in(MetersPerSecond);
+        return DriveConstants.maxDriveSpeed;
     }
 
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
         return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
-    }
-
-    private static Translation2d getLinearVelocityFromJoysticks(double x, double y, double deadband) {
-        // Apply deadband
-        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), deadband);
-        Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
-
-        // Square magnitude for more precise control
-        linearMagnitude = linearMagnitude * linearMagnitude;
-
-        // Return new linear velocity
-        return new Pose2d(new Translation2d(), linearDirection)
-                .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
-                .getTranslation();
     }
 
     public Command joystickDrive(
@@ -321,45 +314,37 @@ public class Drive extends SubsystemBase {
             DoubleSupplier percentSupplier) {
         return Commands.run(
                 () -> {
-                    // Get linear velocity
-                    Translation2d linearVelocity = getLinearVelocityFromJoysticks(
-                            Math.signum(xSupplier.getAsDouble()) * Math.pow(xSupplier.getAsDouble(), 2),
-                            Math.signum(ySupplier.getAsDouble()) * Math.pow(ySupplier.getAsDouble(), 2),
-                            deadbandSupplier.getAsDouble());
-
-                    // Apply rotation deadband
-                    double omega = MathUtil.applyDeadband(-omegaSupplier.getAsDouble(), deadbandSupplier.getAsDouble());
-
-                    // Square rotation value for more precise control
-                    omega = Math.copySign(omega * omega, omega);
-
-                    // Convert to field relative speeds & send command
-                    ChassisSpeeds speeds = new ChassisSpeeds(
-                            linearVelocity.getX()
-                                    * getMaxLinearSpeedMetersPerSec()
+                    ChassisSpeeds zoom = ChassisSpeeds.fromFieldRelativeSpeeds(
+                            MathUtil.applyDeadband(xSupplier.getAsDouble(), deadbandSupplier.getAsDouble())
                                     * percentSupplier.getAsDouble(),
-                            linearVelocity.getY()
-                                    * getMaxLinearSpeedMetersPerSec()
+                            MathUtil.applyDeadband(ySupplier.getAsDouble(), deadbandSupplier.getAsDouble())
                                     * percentSupplier.getAsDouble(),
-                            omega * getMaxAngularSpeedRadPerSec());
-                    boolean isFlipped = DriverStation.getAlliance().isPresent()
-                            && DriverStation.getAlliance().get() == Alliance.Red;
-                    this.autoDrive(
-                            ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    speeds,
-                                    isFlipped
-                                            ? getRotation().plus(new Rotation2d(Math.PI))
-                                            : getRotation()));
+                            MathUtil.applyDeadband(omegaSupplier.getAsDouble(), deadbandSupplier.getAsDouble())
+                                    * percentSupplier.getAsDouble(),
+                            rawGyroRotation);
+
+                    this.autoDrive(zoom);
                 },
                 this);
     }
 
     public void autoDrive(ChassisSpeeds speeds) {
-        SwerveModuleState[] state = kinematics.toSwerveModuleStates(speeds);
-        Logger.recordOutput("Drive/Setpoint", state);
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
+        Logger.recordOutput("Drive/Setpoint", states);
+
         for (int i = 0; i < 4; i++) {
-            modules[i].setState(state[i]);
+            if (i == 2)
+                continue;
+            if (i == 1)
+                continue;
+
+            states[i].optimize(modules[i].getAngle());
+            states[i].cosineScale(modules[i].getAngle());
+
+            modules[i].setState(states[i]);
         }
+
+        Logger.recordOutput("Drive/Optimized", states);
     }
 
     public Command resetGyro() {

@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meter;
 
 import com.pathplanner.lib.config.RobotConfig;
 
@@ -21,17 +22,17 @@ public class Constants {
         public static final double LOOP_UPDATE = 0.02;
         public static final DCMotor motor = DCMotor.getKrakenX60(1);
 
-        public static final double driveGearing = 6.746031746031747;
+        public static final double driveGearing = 5.14;
         public static final double driveMOI = 0.025;
 
-        public static final double turnGearing = 21.428571428571427;
+        public static final double turnGearing = 12.8; // 150/8 
         public static final double turnMOI = 0.005;
 
-        public static final double drivekP = 0.06; // 0.8
+        public static final double drivekP = 0.6; // 0.8
         public static final double drivekI = 0.0;
         public static final double drivekD = 0.0;
 
-        public static final double turnkP = 1.0;
+        public static final double turnkP = 2.0;
         public static final double turnkI = 0.0;
         public static final double turnkD = 0.0;
 
@@ -39,7 +40,7 @@ public class Constants {
         public static final double driveV = 0.0;
         public static final double driveA = 0.0;
 
-        public static final Distance wheelRadius = Distance.ofBaseUnits(1.931, Inches);
+        public static final Distance wheelRadius = Inches.of(1.931);
         public static final double trackWidth = Units.inchesToMeters(10.0);
         public static final double negTrack = Units.inchesToMeters(10.0);
         public static final double posTrack = Units.inchesToMeters(10.0);
@@ -47,7 +48,7 @@ public class Constants {
         public static final int driveCurrentLimitAmps = 80;
         public static final int turnCurrentLimitAmps = 40;
 
-        public static final double drivePositionConversionFactor = 2.0 * Math.PI * wheelRadius.in(Inches)
+        public static final double drivePositionConversionFactor =  wheelRadius.in(Meter)
                 / driveGearing;
         public static final double turnPositionConversionFactor = 2.0 * Math.PI / turnGearing;
 
@@ -61,8 +62,8 @@ public class Constants {
                 new Translation2d(-trackWidth, -trackWidth) // BR
         };
 
-        public static final double maxDriveSpeed = 4.2; // Meters per second
-        public static final double maxAngularspeed = 4; // Figure out max speeds later
+        public static final double maxDriveSpeed = 4.75; // Meters per second
+        public static final double maxAngularspeed = 3.25; // Figure out max speeds later
 
         public enum BOT {
             Protolone,
@@ -72,8 +73,8 @@ public class Constants {
         public static final BOT type = BOT.Protolone;
         /// AUTOS
         public static RobotConfig config;
-        public static final boolean tuningMode = false;
-
+        public static final boolean tuningMode = true;
+        public static final boolean alliance = false; // true : Red, false : Blue
         public static final CommandXboxController controller = new CommandXboxController(0);
     }
 }

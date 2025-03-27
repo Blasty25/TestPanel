@@ -1,43 +1,44 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
 package frc.robot.Subsystems.elevator;
 
-import frc.robot.Subsystems.elevator.Elevator.ElevatorSetpoint;
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
 import org.littletonrobotics.junction.AutoLog;
 
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Voltage;
+
+/** Add your docs here. */
 public interface ElevatorIO {
-  @AutoLog
-  public static class ElevatorIOInputs {
-    public double positionMeters = 0.0;
-    public ElevatorSetpoint setpoint = ElevatorSetpoint.ZERO;
-    public double targetPositionMeters = 0.0;
-    public double profiledTargetMeters = 0.0;
-    public boolean limitSwitch = false;
 
-    public double motorAppliedVolts = 0.0;
-    public double motorCurrentAmps = 0.0;
-    public double motorVelocityMetersPerSecond = 0.0;
+    @AutoLog
+    public static class ElevatorIOInputs{
+        public Distance targetHeight = Meters.zero();
+        public Distance currentHeight = Meters.zero();
 
-    public double followerAppliedVolts = 0.0;
-    public double followerCurrentAmps = 0.0;
-    public double followerVelocityMetersPerSecond = 0.0;
+        public Voltage leftVolts = Volts.zero();
+        public Voltage rightVolts = Volts.zero();
 
-    public boolean motorConnected = false;
-    public double motorTempCelsius = 0.0;
+        public Current leftCurrent = Amps.zero();
+        public Current rightCurrent = Amps.zero();
+        
+        public LinearVelocity velocity = MetersPerSecond.zero();
 
-    public boolean followerConnected = false;
-    public double followerTempCelsius = 0.0;
-  }
+        public double setpoint = 0.0;
+    }
 
-  public default void updateInputs(final ElevatorIOInputsAutoLogged inputs) {}
+    public default void updateInputs(ElevatorIOInputs inputs) {}
 
-  public default void setVoltage(final double voltage) {}
+    public default void setVolts(double volts) {}
 
-  public default void stop() {
-    setVoltage(0);
-  }
+    public default void resetEncoder() {}
 
-  public default void resetEncoder(final double position) {}
-
-  public default void resetEncoder() {
-    resetEncoder(0.0);
-  }
 }

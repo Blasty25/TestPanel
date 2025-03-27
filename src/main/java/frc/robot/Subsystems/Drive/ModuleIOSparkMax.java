@@ -20,8 +20,11 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.AnalogEncoder;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.util.LoggedTunableNumber;
 
 /** Add your docs here. */
 public class ModuleIOSparkMax implements ModuleIO {
@@ -29,7 +32,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     private SparkMax turnSparky;
 
     private AnalogEncoder encoder;
-    
+
     private RelativeEncoder driveEncoder;
     private RelativeEncoder turnEncoder;
 
@@ -40,73 +43,80 @@ public class ModuleIOSparkMax implements ModuleIO {
     private SparkMaxConfig turnConfig = new SparkMaxConfig();
 
     private double encoderOffset;
-
+    private LoggedTunableNumber turnKP = new LoggedTunableNumber("Drive/TurnMotorKP", DriveConstants.turnkP);
     private ModuleIOInputsAutoLogged input = new ModuleIOInputsAutoLogged();
 
-    public ModuleIOSparkMax(Config config){
+    public ModuleIOSparkMax(Config config) {
         driveSparky = new SparkMax(config.driveMotorId, MotorType.kBrushless);
         turnSparky = new SparkMax(config.turnMotorId, MotorType.kBrushless);
-
         encoder = new AnalogEncoder(config.encoderChannel);
+
+        driveController = driveSparky.getClosedLoopController();
+        turnController = turnSparky.getClosedLoopController();
 
         encoderOffset = config.encoderOffset;
 
         driveConfig
-        .idleMode(IdleMode.kCoast)
-        .smartCurrentLimit(DriveConstants.driveCurrentLimitAmps);
+                .idleMode(IdleMode.kCoast)
+                .smartCurrentLimit(DriveConstants.driveCurrentLimitAmps);
         driveConfig.encoder
-        .positionConversionFactor(DriveConstants.drivePositionConversionFactor)
-        .velocityConversionFactor(DriveConstants.driveVelocityFactor);
+                .positionConversionFactor(DriveConstants.drivePositionConversionFactor)
+                .velocityConversionFactor(DriveConstants.driveVelocityFactor);
         driveConfig.closedLoop
-        .pid(DriveConstants.drivekP, DriveConstants.drivekI, DriveConstants.drivekD);
+                .pid(DriveConstants.drivekP, DriveConstants.drivekI, DriveConstants.drivekD);
 
-        turnConfig.
-        inverted(config.isTurnInverted)
-        .idleMode(IdleMode.kCoast)
-        .smartCurrentLimit(DriveConstants.turnCurrentLimitAmps);
+        turnConfig.inverted(config.isTurnInverted)
+                .idleMode(IdleMode.kCoast)
+                .smartCurrentLimit(DriveConstants.turnCurrentLimitAmps);
         turnConfig.encoder
-        .positionConversionFactor(DriveConstants.turnPositionConversionFactor)
-        .velocityConversionFactor(DriveConstants.turnVelocityFactor);
+                .positionConversionFactor(DriveConstants.turnPositionConversionFactor)
+                .velocityConversionFactor(DriveConstants.turnVelocityFactor);
         turnConfig.closedLoop
-        .pid(DriveConstants.turnkP, DriveConstants.turnkI, DriveConstants.turnkD);
+                .pid(turnKP.getAsDouble(), DriveConstants.turnkI, DriveConstants.turnkD);
         turnConfig.closedLoop
-        .positionWrappingInputRange(-Math.PI, Math.PI)
-        .positionWrappingEnabled(true);
-        
-        driveSparky.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        turnSparky.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+                .positionWrappingInputRange(-Math.PI, Math.PI)
+                .positionWrappingEnabled(true);
 
         driveEncoder = driveSparky.getEncoder();
         turnEncoder = turnSparky.getEncoder();
 
-        driveController = driveSparky.getClosedLoopController();
-        turnController = turnSparky.getClosedLoopController();
+        turnEncoder.setPosition(encoder.get() - encoderOffset);
+        
+        driveSparky.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        turnSparky.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
-        inputs.turnEncoder = encoder.get() - Units.radiansToRotations(encoderOffset);
+        inputs.noOffsetAbs = encoder.get();
+        inputs.absPosition = encoder.get() - encoderOffset;
 
-        inputs.driveAppliedVolts = driveSparky.getAppliedOutput();
-        inputs.turnAppliedVolts = turnSparky.getAppliedOutput();
-        
+        inputs.turnPosition = new Rotation2d(turnEncoder.getPosition());
+        inputs.driveAppliedVolts = driveSparky.getAppliedOutput() * driveSparky.getBusVoltage();
+        inputs.turnAppliedVolts = turnSparky.getAppliedOutput() * turnSparky.getBusVoltage();
+
         inputs.driveCurrent = driveSparky.getOutputCurrent();
         inputs.turnCurrent = turnSparky.getOutputCurrent();
 
         inputs.drivePosition = driveEncoder.getPosition();
-        inputs.turnPosition = turnEncoder.getPosition();
 
         inputs.driveVelocity = driveEncoder.getVelocity();
         inputs.turnVelocity = turnEncoder.getVelocity();
 
-        inputs.driveVoltage = new double[] {driveSparky.getAppliedOutput() * driveSparky.getBusVoltage()};
+        inputs.driveVoltage = new double[] { driveSparky.getAppliedOutput() * driveSparky.getBusVoltage() };
 
+        // Update odometry inputs (50Hz because high-frequency odometry in sim doesn't
+        // matter)
+        // TODO: Change OdometryTimeStamps to a double also with Positions
+        inputs.odometryTimestamps = new double[] { Timer.getFPGATimestamp() };
+        inputs.odometryDrivePositionsRad = new double[] { inputs.drivePosition };
+        inputs.odometryTurnPositions = new Rotation2d[] { inputs.turnPosition };
     }
 
     @Override
-    public void setDriveMotor(double positionRad, double feedForward) {
-        Logger.recordOutput("Drive/Debug/DriveSetpoint", positionRad + feedForward);
-        driveController.setReference(positionRad, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedForward);
+    public void setDriveMotor(double positionRadpersec, double feedForward) {
+        Logger.recordOutput("Drive/Debug/DriveSetpoint", positionRadpersec + feedForward);
+        driveController.setReference(positionRadpersec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedForward);
     }
 
     @Override
@@ -123,12 +133,10 @@ public class ModuleIOSparkMax implements ModuleIO {
         }
     }
 
-
     @Override
     public void setBrakeMode(boolean enabled) {
         driveConfig.idleMode(
-            enabled ? IdleMode.kCoast : IdleMode.kBrake
-        );
+                enabled ? IdleMode.kCoast : IdleMode.kBrake);
         driveSparky.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 }

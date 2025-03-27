@@ -1,44 +1,51 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
 package frc.robot.Subsystems.elevator;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
-public class ElevatorIOSim implements ElevatorIO {
-  private final ElevatorSim elevatorSim =
-      new ElevatorSim(
-          DCMotor.getNEO(2),
-          ElevatorConstants.gearing,
-          ElevatorConstants.mass,
-          ElevatorConstants.drumRadius,
-          0,
-          ElevatorConstants.travel,
-          true,
-          0);
-  private double volts = 0.0;
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.Subsystems.elevator.ElevatorConstants.*;
 
-  @Override
-  public void updateInputs(ElevatorIOInputsAutoLogged inputs) {
-    if (DriverStation.isDisabled()) {
-      stop();
+public class ElevatorIOSim implements ElevatorIO{
+
+    private ElevatorSim elevator;
+
+    private double volts = 0.0;
+
+    public ElevatorIOSim() {
+        this.elevator = new ElevatorSim(
+                LinearSystemId.createElevatorSystem(gearbox, elevatorMass, drumRadius, gearing),
+                gearbox, minHeight, maxHeight, simGravity, minHeight);
     }
-    elevatorSim.update(0.02);
 
-    inputs.positionMeters = elevatorSim.getPositionMeters();
-    inputs.motorVelocityMetersPerSecond = elevatorSim.getVelocityMetersPerSecond();
-    inputs.motorAppliedVolts = volts;
-    inputs.motorCurrentAmps = elevatorSim.getCurrentDrawAmps();
-    inputs.motorTempCelsius = 20.0;
-    inputs.followerTempCelsius = 20.0;
-  }
+    @Override
+    public void updateInputs(ElevatorIOInputs inputs) {
+        elevator.update(0.02);
+        inputs.leftVolts = Volts.of(volts);
+        inputs.currentHeight = Meters.of(elevator.getPositionMeters());
+        inputs.velocity = MetersPerSecond.of(elevator.getVelocityMetersPerSecond());
 
-  @Override
-  public void setVoltage(double voltage) {
-    volts = voltage;
-    elevatorSim.setInputVoltage(MathUtil.clamp(voltage, -12.0, 12.0));
-  }
+        inputs.leftCurrent = Amps.of(elevator.getCurrentDrawAmps());
+    }
 
-  @Override
-  public void resetEncoder(double position) {}
+    @Override
+    public void setVolts(double voltage) {
+        this.volts = voltage;
+        elevator.setInputVoltage(MathUtil.clamp(voltage, -12, 12));
+    }
+
+    @Override
+    public void resetEncoder() {
+        elevator.setInputVoltage(0);
+    }
+
+    
 }

@@ -21,8 +21,9 @@ public interface ModuleIO {
         public double driveFeedForward = 0.0;
         public double driveAppliedVolts = 0.0;
 
-        public double turnPosition = 0.0;
-        public double turnEncoder = 0.0;
+        public Rotation2d turnPosition = new Rotation2d();
+        public double absPosition = 0.0;
+        public double noOffsetAbs =0.0;
         public double turnCurrent = 0.0;
         public double turnVelocity = 0.0;
         public double turnFeedforward = 0.0;
@@ -51,9 +52,6 @@ public interface ModuleIO {
     }
 
     public default void setBrakeMode(boolean enabled) {
-    }
-
-    public default void runTurnPosition(Rotation2d rotation) {
     }
 
     public default void runCharacterization(double volts){
