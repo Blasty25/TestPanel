@@ -4,6 +4,10 @@
 
 package frc.robot.Subsystems.drive;
 
+import static edu.wpi.first.units.Units.Value;
+
+import java.util.Queue;
+
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveDrivetrain.OdometryThread;
@@ -20,10 +24,9 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.AnalogEncoder;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Subsystems.drive.util.SparkOdometryThread;
 import frc.robot.util.LoggedTunableNumber;
 
 /** Add your docs here. */
@@ -41,6 +44,10 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     private SparkMaxConfig driveConfig = new SparkMaxConfig();
     private SparkMaxConfig turnConfig = new SparkMaxConfig();
+
+    private final Queue<Double> timestampQueue;
+    private final Queue<Double> turnPositionQueue;
+    private final Queue<Double> drivePositionQueue;
 
     private double encoderOffset;
     private LoggedTunableNumber turnKP = new LoggedTunableNumber("Drive/TurnMotorKP", DriveConstants.turnkP);
@@ -81,7 +88,9 @@ public class ModuleIOSparkMax implements ModuleIO {
         turnEncoder = turnSparky.getEncoder();
 
         turnEncoder.setPosition(encoder.get() - encoderOffset);
-        
+        timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
+        drivePositionQueue = SparkOdometryThread.getInstance().registerSignal(()-> driveSparky.getEncoder().getPosition());
+        turnPositionQueue = SparkOdometryThread.getInstance().registerSignal(()-> turnSparky.getEncoder().getPosition());
         driveSparky.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         turnSparky.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
@@ -105,12 +114,16 @@ public class ModuleIOSparkMax implements ModuleIO {
 
         inputs.driveVoltage = new double[] { driveSparky.getAppliedOutput() * driveSparky.getBusVoltage() };
 
-        // Update odometry inputs (50Hz because high-frequency odometry in sim doesn't
-        // matter)
-        // TODO: Change OdometryTimeStamps to a double also with Positions
-        inputs.odometryTimestamps = new double[] { Timer.getFPGATimestamp() };
-        inputs.odometryDrivePositionsRad = new double[] { inputs.drivePosition };
-        inputs.odometryTurnPositions = new Rotation2d[] { inputs.turnPosition };
+        inputs.odometryTimestamps = timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+        inputs.odometryDrivePositionsRad = drivePositionQueue.stream()
+                .mapToDouble((Double value) -> Units.rotationsToRadians(value))
+                .toArray();
+        inputs.odometryTurnPositions = turnPositionQueue.stream()
+                .map((Double value) -> Rotation2d.fromRotations(value))
+                .toArray(Rotation2d[]::new);
+        timestampQueue.clear();
+        drivePositionQueue.clear();
+        turnPositionQueue.clear();
     }
 
     @Override

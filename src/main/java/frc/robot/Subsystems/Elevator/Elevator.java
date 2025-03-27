@@ -5,23 +5,15 @@
 package frc.robot.Subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.ExponentialProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
-import edu.wpi.first.math.trajectory.ExponentialProfile.Constraints;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -30,9 +22,6 @@ import frc.robot.util.LoggedTunableNumber;
 
 /** Add your docs here. */
 public class Elevator extends SubsystemBase {
-
-    private LoggedTunableNumber maxVelocity = new LoggedTunableNumber("Elevator/Constraints/MaxVelocity", 4.2);
-    private LoggedTunableNumber maxAccerlation = new LoggedTunableNumber("Elevator/Constraints/maxAcceleration", 3.5);
 
     private ElevatorIO io;
     private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
@@ -50,14 +39,13 @@ public class Elevator extends SubsystemBase {
             kA.getAsDouble(), 0.02);
 
     private Distance difference = Meters.zero();
-    private double tolerance = ElevatorConstants.tolerance;
 
-    private ProfiledPIDController pid = new ProfiledPIDController(kP.getAsDouble(), kI.getAsDouble(), kD.getAsDouble(),
-            new TrapezoidProfile.Constraints(maxVelocity.getAsDouble(), maxAccerlation.getAsDouble()));
+    private ProfiledPIDController pid = new ProfiledPIDController(38, 0.0, 4,
+            new TrapezoidProfile.Constraints(3.8, 3.2));
 
     public Elevator(ElevatorIO io) {
         this.io = io;
-        pid.setTolerance(0.1);
+        pid.setTolerance(0.01);
     }
 
     public void setSetpoint(String setpoint) {
@@ -90,12 +78,10 @@ public class Elevator extends SubsystemBase {
         Logger.recordOutput("Elevator/FFOutput", ffOutput * Math.signum(pidOutput));
 
         double output = pidOutput + ffOutput * Math.signum(pidOutput);
-        io.setVolts(pidOutput + ffOutput);
 
-        // if (difference.in(Meters) < tolerance) {
-        //     ffOutput = 0;
-        //     io.setVolts(output + (ffOutput * (Math.signum(pidOutput))));
-        // }
+        //TODO TEST only with PID CONTROL Remove ffOutput smth bugging not working!!!!! 
+        io.setVolts(pidOutput);
+        Logger.recordOutput("/Elevator/Difference", difference.in(Meters));
     }
 
     public Command resetEncoder() {

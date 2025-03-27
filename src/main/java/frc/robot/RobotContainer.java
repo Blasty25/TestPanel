@@ -7,7 +7,6 @@ package frc.robot;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.wpilibj2.command.Command;
-// import frc.robot.CommandUtil.runReef;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Subsystems.drive.Drive;
 import frc.robot.Subsystems.drive.GyroIO;
@@ -19,7 +18,8 @@ import frc.robot.Subsystems.elevator.ElevatorIOReal;
 import frc.robot.Subsystems.elevator.ElevatorIOSim;
 import frc.robot.Subsystems.drive.ModuleIOSim;
 import frc.robot.Subsystems.drive.ModuleIOSparkMax;
-import frc.robot.Subsystems.drive.pathfinding.PIDAlign;
+import frc.robot.Subsystems.drive.pathfinding.leftPIDAllign;
+import frc.robot.Subsystems.drive.pathfinding.rightPIDAllign;
 
 public class RobotContainer {
   private Drive drive;
@@ -52,16 +52,17 @@ public class RobotContainer {
   private void configureBindings() {
     drive.setDefaultCommand(
         drive.joystickDrive(
-            () -> Constants.DriveConstants.controller.getLeftY(),
-            () -> Constants.DriveConstants.controller.getLeftX(),
+            () -> -Constants.DriveConstants.controller.getLeftY(),
+            () -> -Constants.DriveConstants.controller.getLeftX(),
             () -> -Constants.DriveConstants.controller.getRightX(),
-            () -> 0.1,  //deadband
-            () -> 4.2));  //max speed 
+            () -> 0.15,  //deadband
+            () -> 4.6));  //max speed 
 
     // Reseting Gyro and Locking Gyro features
     // DriveConstants.controller.a().onTrue(new lockGyro(pigeon));
     // DriveConstants.controller.b().onTrue(drive.resetGyro());
-    DriveConstants.controller.leftBumper().onTrue(new PIDAlign(drive, DriveConstants.alliance));
+    DriveConstants.controller.leftBumper().onTrue(new leftPIDAllign(drive, DriveConstants.alliance));
+    DriveConstants.controller.rightBumper().onTrue(new rightPIDAllign(drive, DriveConstants.alliance));
     // DriveConstants.controller.y().whileTrue(drive.recordPose());
 
     DriveConstants.controller.y().onTrue(elevator.runSetpoint(ElevatorConstants.l4));
@@ -69,6 +70,8 @@ public class RobotContainer {
     DriveConstants.controller.b().onTrue(elevator.runSetpoint(ElevatorConstants.l2));
     DriveConstants.controller.a().onTrue(elevator.runSetpoint(ElevatorConstants.l1));
     DriveConstants.controller.povDown().onTrue(elevator.runSetpoint(ElevatorConstants.stow));
+
+    DriveConstants.controller.povUp().onTrue(elevator.resetEncoder());
 
     // FYI IF USING SYS ID GO TO MODULEIO AND CHANGE RUNSYSID TO TRUE
     // DriveConstants.controller.a().whileTrue(elevator.sysIdRoutine());

@@ -3,31 +3,28 @@ package frc.robot.Subsystems.drive.pathfinding;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Subsystems.drive.Drive;
 import frc.robot.Constants.DriveConstants;
 import org.littletonrobotics.junction.Logger;
 
-public class PIDAlign extends Command {
+public class rightPIDAllign extends Command {
   private final Drive drive;
   private final PIDController xPID;
   private final PIDController yPID;
-  private final ProfiledPIDController thetaPID;
+  private final PIDController thetaPID;
   private PoseAllignment poseAllignment = new PoseAllignment();
   private Pose2d target;
   private boolean alliance;
 
-  public PIDAlign(Drive drive, boolean alliance) {
+  public rightPIDAllign(Drive drive, boolean alliance) {
     this.drive = drive;
     this.alliance = alliance;
     this.xPID = new PIDController(10.0, 0.0, 0.5);
     this.yPID = new PIDController(10.0, 0.0, 0.03);
-    this.thetaPID = new ProfiledPIDController(10.0, 0.0, 0.0, new Constraints(4.0, 3.5));
+    this.thetaPID = new PIDController(10.0, 0.0, 0.0);
 
     addRequirements(drive);
   }
@@ -37,11 +34,11 @@ public class PIDAlign extends Command {
     // Reset PID controllers to prevent accumulated error
     xPID.reset();
     yPID.reset();
-    thetaPID.reset(0);
+    thetaPID.reset();
     if (alliance) {
-      this.target = drive.getPose().nearest(poseAllignment.redLeft); // Set target position
+      this.target = drive.getPose().nearest(poseAllignment.redRight); // Set target position
     } else{
-      this.target = drive.getPose().nearest(poseAllignment.blueLeft);
+      this.target = drive.getPose().nearest(poseAllignment.blueRight);
     }
 
     xPID.setTolerance(0.05);
