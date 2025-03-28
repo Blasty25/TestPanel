@@ -25,14 +25,14 @@ public class Constants {
         public static final double driveGearing = 5.14;
         public static final double driveMOI = 0.025;
 
-        public static final double turnGearing = 12.8; // 150/8 
+        public static final double turnGearing = 12.8; 
         public static final double turnMOI = 0.005;
 
-        public static final double drivekP = 0.6; // 0.8
+        public static final double drivekP = 0.6;
         public static final double drivekI = 0.0;
         public static final double drivekD = 0.0;
 
-        public static final double turnkP = 2.0;
+        public static final double turnkP = 0.8;
         public static final double turnkI = 0.0;
         public static final double turnkD = 0.0;
 

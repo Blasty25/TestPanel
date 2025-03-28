@@ -52,7 +52,7 @@ public class Module {
     }
 
     public void setState(SwerveModuleState state){
-        io.setDriveMotor(state.speedMetersPerSecond / DriveConstants.wheelRadius.in(Meters), driveFeedforward.calculate(state.speedMetersPerSecond));
+        io.setDriveMotor(state.speedMetersPerSecond, driveFeedforward.calculate(state.speedMetersPerSecond));
         io.setTurnMotor(state.angle.getRadians());
     }
 

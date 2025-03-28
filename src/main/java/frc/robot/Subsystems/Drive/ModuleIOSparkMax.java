@@ -79,8 +79,7 @@ public class ModuleIOSparkMax implements ModuleIO {
                 .positionConversionFactor(DriveConstants.turnPositionConversionFactor)
                 .velocityConversionFactor(DriveConstants.turnVelocityFactor);
         turnConfig.closedLoop
-                .pid(turnKP.getAsDouble(), DriveConstants.turnkI, DriveConstants.turnkD);
-        turnConfig.closedLoop
+                .pid(DriveConstants.turnkP, DriveConstants.turnkI, DriveConstants.turnkD)
                 .positionWrappingInputRange(-Math.PI, Math.PI)
                 .positionWrappingEnabled(true);
 
@@ -127,9 +126,8 @@ public class ModuleIOSparkMax implements ModuleIO {
     }
 
     @Override
-    public void setDriveMotor(double positionRadpersec, double feedForward) {
-        Logger.recordOutput("Drive/Debug/DriveSetpoint", positionRadpersec + feedForward);
-        driveController.setReference(positionRadpersec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedForward);
+    public void setDriveMotor(double positionMPS, double feedForward) {
+        driveController.setReference(positionMPS, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedForward);
     }
 
     @Override

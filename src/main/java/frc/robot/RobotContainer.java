@@ -51,12 +51,12 @@ public class RobotContainer {
 
   private void configureBindings() {
     drive.setDefaultCommand(
-        drive.joystickDrive(
-            () -> -Constants.DriveConstants.controller.getLeftY(),
-            () -> -Constants.DriveConstants.controller.getLeftX(),
-            () -> -Constants.DriveConstants.controller.getRightX(),
-            () -> 0.15,  //deadband
-            () -> 4.6));  //max speed 
+       drive.joystickDrive(
+           () -> -Constants.DriveConstants.controller.getLeftY(),
+           () -> -Constants.DriveConstants.controller.getLeftX(),
+           () -> -Constants.DriveConstants.controller.getRightX(),
+           () -> 0.2,  //deadband
+           () -> 1));  //max speed 
 
     // Reseting Gyro and Locking Gyro features
     // DriveConstants.controller.a().onTrue(new lockGyro(pigeon));

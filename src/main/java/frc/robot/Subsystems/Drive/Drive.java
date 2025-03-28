@@ -48,6 +48,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Subsystems.drive.pathfinding.PoseAllignment;
 import frc.robot.Subsystems.drive.util.SparkOdometryThread;
@@ -245,7 +246,8 @@ public class Drive extends SubsystemBase {
             // Update gyro angle
             if (gyroInputs.isConnected) {
                 // Use the real gyro angle
-                rawGyroRotation = gyroInputs.odometryYawPositions[i];
+                // rawGyroRotation = gyroInputs.odometryYawPositions[i];
+                rawGyroRotation = gyroInputs.yawHeading;
             } else {
                 // Use the angle delta from the kinematics and module deltas
                 Twist2d twist = kinematics.toTwist2d(moduleDeltas);
@@ -316,11 +318,11 @@ public class Drive extends SubsystemBase {
                 () -> {
                     ChassisSpeeds zoom = ChassisSpeeds.fromFieldRelativeSpeeds(
                             MathUtil.applyDeadband(xSupplier.getAsDouble(), deadbandSupplier.getAsDouble())
-                                    * percentSupplier.getAsDouble(),
+                                    * percentSupplier.getAsDouble() * DriveConstants.maxDriveSpeed,
                             MathUtil.applyDeadband(ySupplier.getAsDouble(), deadbandSupplier.getAsDouble())
-                                    * percentSupplier.getAsDouble(),
+                                    * percentSupplier.getAsDouble() * DriveConstants.maxDriveSpeed,
                             MathUtil.applyDeadband(omegaSupplier.getAsDouble(), deadbandSupplier.getAsDouble())
-                                    * percentSupplier.getAsDouble(),
+                                    * percentSupplier.getAsDouble() * DriveConstants.maxAngularspeed,
                             rawGyroRotation);
 
                     this.autoDrive(zoom);

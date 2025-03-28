@@ -39,55 +39,42 @@ public class Elevator extends SubsystemBase {
             kA.getAsDouble(), 0.02);
 
     private Distance difference = Meters.zero();
-
-    private ProfiledPIDController pid = new ProfiledPIDController(38, 0.0, 4,
-            new TrapezoidProfile.Constraints(3.8, 3.2));
+    //KP is 110 ik but whatever!
+    private ProfiledPIDController pid = new ProfiledPIDController(kP.getAsDouble(), 0.0, 0.0,
+            new TrapezoidProfile.Constraints(3.8, 4));
 
     public Elevator(ElevatorIO io) {
         this.io = io;
-        pid.setTolerance(0.01);
+        pid.setTolerance(0.001);
     }
 
     public void setSetpoint(String setpoint) {
         if (setpoint.equals("STOW")) {
-            calculateVolts(Inches.of(0).in(Meters), 0);
+            setPosition(0, 0);
         }
         if (setpoint.equals("L1")) {
-            calculateVolts(Inches.of(10).in(Meters),0);
+            setPosition(0.4,0);
         }
         if (setpoint.equals("L2")) {
-            calculateVolts(Inches.of(16).in(Meters),0);
+            setPosition(0.678,0);
         }
         if (setpoint.equals("L3")) {
-            calculateVolts(Inches.of(24).in(Meters),0);
+            setPosition(1.154,0);
         }
         if (setpoint.equals("L4")) {
-            calculateVolts(Inches.of(36).in(Meters),0);
+            setPosition(1.233,0);
         }
     }
 
-    public void calculateVolts(double position, double velocity) {
+    public void setPosition(double position, double velocity) {
         pid.setGoal(new State(position, velocity));
-        inputs.targetHeight = Meters.of(pid.getGoal().position);
-        inputs.setpoint = pid.getGoal().position;
-
-        double pidOutput = pid.calculate(inputs.currentHeight.in(Meters), inputs.setpoint);
-        double ffOutput = ff.calculateWithVelocities(inputs.velocity.in(MetersPerSecond), 0.27);
-
-        Logger.recordOutput("Elevator/PIDOutput", pidOutput);
-        Logger.recordOutput("Elevator/FFOutput", ffOutput * Math.signum(pidOutput));
-
-        double output = pidOutput + ffOutput * Math.signum(pidOutput);
-
-        //TODO TEST only with PID CONTROL Remove ffOutput smth bugging not working!!!!! 
-        io.setVolts(pidOutput);
-        Logger.recordOutput("/Elevator/Difference", difference.in(Meters));
     }
 
     public Command resetEncoder() {
         return Commands.runOnce(() -> {
             io.resetEncoder();
-        }, this);
+            System.out.println("Encoder");
+        }, this).ignoringDisable(   true);
     }
 
     public Command runSetpoint(String position) {
@@ -112,7 +99,23 @@ public class Elevator extends SubsystemBase {
         if (kD.hasChanged(hashCode())) {
             pid.setD(kD.getAsDouble());
         }
+
+        inputs.targetHeight = Meters.of(pid.getGoal().position);
+        inputs.setpoint = pid.getGoal().position;
+
+        double pidOutput = pid.calculate(inputs.currentHeight.in(Meters));
+        double ffOutput = ff.calculateWithVelocities(inputs.velocity.in(MetersPerSecond), 0.27);
+
+        Logger.recordOutput("Elevator/PIDOutput", pidOutput);
+        Logger.recordOutput("Elevator/FFOutput", ffOutput * Math.signum(pidOutput));
+
+        double output = pidOutput + ffOutput * Math.signum(pidOutput);
+
+        //TODO TEST only with PID CONTROL Remove ffOutput smth bugging not working!!!!! 
+        io.setVolts(pidOutput);
+        
         difference = (inputs.targetHeight.minus(inputs.currentHeight));
+        Logger.recordOutput("/Elevator/Difference", difference.in(Meters));
         Logger.recordOutput("Elevator/TargetHeight", inputs.targetHeight);
     }
 }

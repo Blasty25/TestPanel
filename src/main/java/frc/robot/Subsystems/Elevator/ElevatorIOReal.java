@@ -10,6 +10,8 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -24,8 +26,7 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 /** Add your docs here. */
 public class ElevatorIOReal implements ElevatorIO{
-    private SparkMaxConfig leftConfig = new SparkMaxConfig();
-    private SparkMaxConfig rightConfig = new SparkMaxConfig();
+    private SparkMaxConfig config = new SparkMaxConfig();
 
     private SparkMax leftSparky = new SparkMax(ElevatorConstants.leftID, MotorType.kBrushless);
     private SparkMax rightSparky = new SparkMax(ElevatorConstants.rightID, MotorType.kBrushless);
@@ -33,25 +34,23 @@ public class ElevatorIOReal implements ElevatorIO{
     public RelativeEncoder encoder;
 
     public ElevatorIOReal(){
-        leftConfig
+        config
         .idleMode(IdleMode.kCoast)
         .inverted(false)
         .voltageCompensation(12);
 
-        leftConfig.encoder
-        .positionConversionFactor(ElevatorConstants.positionConversionFactor);
+        config.encoder
+        .positionConversionFactor(ElevatorConstants.positionConversionFactor)
+        .velocityConversionFactor(ElevatorConstants.positionConversionFactor / 60);
 
-        leftConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+        config.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
 
-        leftSparky.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        leftSparky.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        rightConfig
-        .idleMode(IdleMode.kCoast)
-        .inverted(true)
-        .voltageCompensation(12);
-
-        rightSparky.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
+        config.follow(leftSparky, true);
+        
+        rightSparky.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        
         encoder = leftSparky.getEncoder();
         encoder.setPosition(0.0);
     }
@@ -67,12 +66,12 @@ public class ElevatorIOReal implements ElevatorIO{
         inputs.rightVolts = Volts.of(rightSparky.getAppliedOutput() * rightSparky.getBusVoltage());
 
         inputs.velocity = MetersPerSecond.of(encoder.getVelocity());
+        Logger.recordOutput("Elevator/RawRotations", leftSparky.getEncoder().getPosition());
     }
 
     @Override
     public void setVolts(double volts) {
         leftSparky.setVoltage(volts);
-        rightSparky.setVoltage(volts);
     }
 
     @Override

@@ -31,7 +31,8 @@ public class ElevatorConstants {
     //HARDWARE!!!!
     public static final int leftID = 31;
     public static final int rightID = 32;
-    public static final double positionConversionFactor = 0.8745; //Smth like that check with turbo
+    public static final double positionConversionFactor = 0.01511; //Smth like that check with turbo
+
 
 
     //Dw bout this i use strings to set my setpoints

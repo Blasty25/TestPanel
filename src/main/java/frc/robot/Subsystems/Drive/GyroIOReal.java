@@ -35,16 +35,17 @@ public class GyroIOReal implements GyroIO {
 
     @Override
     public void updateInputs(GyroIOInputs inputs) {
-        if (gyro.isConnected()) {
-            inputs.isConnected = true;
+        inputs.isConnected = gyro.isConnected();
+
+        if (inputs.isConnected) {
+            inputs.yawHeading = gyro.getRotation2d();
+            inputs.odometryYawPositions = yawPositionQueue.stream()
+                    .map((Double value) -> Rotation2d.fromDegrees(value))
+                    .toArray(Rotation2d[]::new);
+            inputs.odometryYawTimestamps = yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+            yawTimestampQueue.clear();
+            yawPositionQueue.clear();
         }
-        inputs.yawHeading = gyro.getRotation2d();
-        inputs.odometryYawPositions = yawPositionQueue.stream()
-                .map((Double value) -> Rotation2d.fromDegrees(value))
-                .toArray(Rotation2d[]::new);
-        inputs.odometryYawTimestamps = yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
-        yawTimestampQueue.clear();
-        yawPositionQueue.clear();
     }
 
     @Override
