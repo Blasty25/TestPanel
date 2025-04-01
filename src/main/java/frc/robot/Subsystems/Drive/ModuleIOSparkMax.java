@@ -44,18 +44,14 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     private SparkMaxConfig driveConfig = new SparkMaxConfig();
     private SparkMaxConfig turnConfig = new SparkMaxConfig();
-
-    private final Queue<Double> timestampQueue;
-    private final Queue<Double> turnPositionQueue;
-    private final Queue<Double> drivePositionQueue;
-
     private double encoderOffset;
-    private LoggedTunableNumber turnKP = new LoggedTunableNumber("Drive/TurnMotorKP", DriveConstants.turnkP);
     private ModuleIOInputsAutoLogged input = new ModuleIOInputsAutoLogged();
 
     public ModuleIOSparkMax(Config config) {
+
         driveSparky = new SparkMax(config.driveMotorId, MotorType.kBrushless);
         turnSparky = new SparkMax(config.turnMotorId, MotorType.kBrushless);
+
         encoder = new AnalogEncoder(config.encoderChannel);
 
         driveController = driveSparky.getClosedLoopController();
@@ -65,7 +61,8 @@ public class ModuleIOSparkMax implements ModuleIO {
 
         driveConfig
                 .idleMode(IdleMode.kCoast)
-                .smartCurrentLimit(DriveConstants.driveCurrentLimitAmps);
+                .smartCurrentLimit(DriveConstants.driveCurrentLimitAmps)
+                .inverted(true);
         driveConfig.encoder
                 .positionConversionFactor(DriveConstants.drivePositionConversionFactor)
                 .velocityConversionFactor(DriveConstants.driveVelocityFactor);
@@ -87,9 +84,6 @@ public class ModuleIOSparkMax implements ModuleIO {
         turnEncoder = turnSparky.getEncoder();
 
         turnEncoder.setPosition(encoder.get() - encoderOffset);
-        timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
-        drivePositionQueue = SparkOdometryThread.getInstance().registerSignal(()-> driveSparky.getEncoder().getPosition());
-        turnPositionQueue = SparkOdometryThread.getInstance().registerSignal(()-> turnSparky.getEncoder().getPosition());
         driveSparky.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         turnSparky.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
@@ -99,30 +93,16 @@ public class ModuleIOSparkMax implements ModuleIO {
         inputs.noOffsetAbs = encoder.get();
         inputs.absPosition = encoder.get() - encoderOffset;
 
-        inputs.turnPosition = new Rotation2d(turnEncoder.getPosition());
-        inputs.driveAppliedVolts = driveSparky.getAppliedOutput() * driveSparky.getBusVoltage();
-        inputs.turnAppliedVolts = turnSparky.getAppliedOutput() * turnSparky.getBusVoltage();
-
-        inputs.driveCurrent = driveSparky.getOutputCurrent();
-        inputs.turnCurrent = turnSparky.getOutputCurrent();
-
         inputs.drivePosition = driveEncoder.getPosition();
-
         inputs.driveVelocity = driveEncoder.getVelocity();
-        inputs.turnVelocity = turnEncoder.getVelocity();
-
+        inputs.driveAppliedVolts = driveSparky.getAppliedOutput() * driveSparky.getBusVoltage();
+        inputs.driveCurrent = driveSparky.getOutputCurrent();
         inputs.driveVoltage = new double[] { driveSparky.getAppliedOutput() * driveSparky.getBusVoltage() };
 
-        inputs.odometryTimestamps = timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
-        inputs.odometryDrivePositionsRad = drivePositionQueue.stream()
-                .mapToDouble((Double value) -> Units.rotationsToRadians(value))
-                .toArray();
-        inputs.odometryTurnPositions = turnPositionQueue.stream()
-                .map((Double value) -> Rotation2d.fromRotations(value))
-                .toArray(Rotation2d[]::new);
-        timestampQueue.clear();
-        drivePositionQueue.clear();
-        turnPositionQueue.clear();
+        inputs.turnPosition = Rotation2d.fromRotations(turnEncoder.getPosition());
+        inputs.turnAppliedVolts = turnSparky.getAppliedOutput() * turnSparky.getBusVoltage();
+        inputs.turnCurrent = turnSparky.getOutputCurrent();
+        inputs.turnVelocity = turnEncoder.getVelocity();
     }
 
     @Override
@@ -131,9 +111,9 @@ public class ModuleIOSparkMax implements ModuleIO {
     }
 
     @Override
-    public void setTurnMotor(double rotation) {
+    public void setTurnMotor(double rotation, double ffVoltage) {
         Logger.recordOutput("Drive/Debug/TurnSetpoint", rotation);
-        turnController.setReference(rotation, ControlType.kPosition);
+        turnController.setReference(rotation, ControlType.kPosition, ClosedLoopSlot.kSlot0, ffVoltage);
     }
 
     @Override

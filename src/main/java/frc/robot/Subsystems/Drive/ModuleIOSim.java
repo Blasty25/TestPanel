@@ -1,12 +1,13 @@
 package frc.robot.Subsystems.drive;
 
-import java.util.Random;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants.DriveConstants;
@@ -20,15 +21,14 @@ public class ModuleIOSim implements ModuleIO {
         private double turnAppliedVolts = 0.0;
 
         private double driveFF = 0.0;
-
-
+        private double turnFF = 0.0;
 
         private PIDController drivePID = new PIDController(DriveConstants.drivekP, 0.0,
                         DriveConstants.drivekD);
 
         private PIDController turnPID = new PIDController(DriveConstants.turnkP, 0.0,
                         DriveConstants.turnkD);
- 
+
         public ModuleIOSim() {
                 driveMotor = new DCMotorSim(
                                 LinearSystemId.createDCMotorSystem(DriveConstants.motor, DriveConstants.driveMOI,
@@ -48,8 +48,9 @@ public class ModuleIOSim implements ModuleIO {
                 driveMotor.update(0.02);
                 turnMotor.update(0.02);
 
-                turnAppliedVolts = turnPID.calculate(turnMotor.getAngularPositionRad());
-                driveAppliedVolts = driveFF + drivePID.calculate(driveMotor.getAngularVelocityRadPerSec());
+                turnAppliedVolts = turnFF + turnPID.calculate(turnMotor.getAngularPositionRad());
+                driveAppliedVolts = driveFF + drivePID.calculate(
+                                DriveConstants.wheelRadius.in(Meters) * (driveMotor.getAngularVelocityRadPerSec()));
 
                 // Updating Module Values
                 inputs.driveCurrent = driveMotor.getCurrentDrawAmps();
@@ -65,14 +66,14 @@ public class ModuleIOSim implements ModuleIO {
                 turnMotor.setInputVoltage(MathUtil.clamp(turnAppliedVolts, -12, 12));
                 driveMotor.setInputVoltage(MathUtil.clamp(driveAppliedVolts, -12, 12));
 
-                inputs.driveAppliedVolts = driveAppliedVolts;
-                inputs.turnAppliedVolts = turnAppliedVolts;
-
-                // Update odometry inputs (50Hz because high-frequency odometry in sim doesn't
-                // matter)
-                inputs.odometryTimestamps = new double[] { Timer.getFPGATimestamp() };
-                inputs.odometryDrivePositionsRad = new double[] { inputs.drivePosition };
-                inputs.odometryTurnPositions = new Rotation2d[] { inputs.turnPosition };
+                if (RobotController.getInputVoltage() >= 12) {
+                        inputs.driveAppliedVolts = driveAppliedVolts * 12;
+                        inputs.turnAppliedVolts = turnAppliedVolts * 12;
+                } else {
+                        inputs.driveAppliedVolts = driveAppliedVolts
+                                        * RobotController.getMeasureInputVoltage().in(Volts);
+                        inputs.turnAppliedVolts = turnAppliedVolts * RobotController.getMeasureInputVoltage().in(Volts);
+                }
         }
 
         @Override
@@ -82,7 +83,8 @@ public class ModuleIOSim implements ModuleIO {
         }
 
         @Override
-        public void setTurnMotor(double rotation) {
+        public void setTurnMotor(double rotation, double ffVoltage) {
+                turnFF = ffVoltage;
                 turnPID.setSetpoint(rotation);
         }
 }

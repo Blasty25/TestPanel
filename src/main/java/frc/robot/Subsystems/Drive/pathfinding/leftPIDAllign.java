@@ -7,9 +7,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Subsystems.drive.Drive;
-import frc.robot.Constants.DriveConstants;
-import org.littletonrobotics.junction.Logger;
 
+import org.littletonrobotics.junction.Logger;
+import static frc.robot.Constants.*;
 public class leftPIDAllign extends Command {
   private final Drive drive;
   private final PIDController xPID;
@@ -58,7 +58,7 @@ public class leftPIDAllign extends Command {
     drive.getRotation());
 
     // zoom zoom
-    drive.autoDrive(ChassisSpeeds.discretize(zoom, 0.02));
+    drive.runVelocity(ChassisSpeeds.discretize(zoom, 0.02));
 
     // Log data for debugging
     Logger.recordOutput("Drive/PID/Target", target);
@@ -80,6 +80,6 @@ public class leftPIDAllign extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    drive.autoDrive(new ChassisSpeeds());
+    drive.runVelocity(new ChassisSpeeds());
   }
 }

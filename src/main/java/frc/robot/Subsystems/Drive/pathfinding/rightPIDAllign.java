@@ -58,7 +58,7 @@ public class rightPIDAllign extends Command {
     drive.getRotation());
 
     // zoom zoom
-    drive.autoDrive(ChassisSpeeds.discretize(zoom, 0.02));
+    drive.runVelocity(ChassisSpeeds.discretize(zoom, 0.02));
 
     // Log data for debugging
     Logger.recordOutput("Drive/PID/Target", target);
@@ -80,6 +80,6 @@ public class rightPIDAllign extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    drive.autoDrive(new ChassisSpeeds());
+    drive.runVelocity(new ChassisSpeeds());
   }
 }

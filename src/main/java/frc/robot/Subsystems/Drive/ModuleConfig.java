@@ -11,7 +11,7 @@ public class ModuleConfig {
         Config config;
         switch (index) {
             case 0:
-                config = new Config(1, 2, 0, 0.667, false);
+                config = new Config(1, 2, 0, 0.661, false);
                 return config;
             case 1:
                 config = new Config(3, 4, 1, 0.807, false);
@@ -20,7 +20,7 @@ public class ModuleConfig {
                 config = new Config(5, 6, 2, 0.254, false);
                 return config;
             case 3:
-                config = new Config(7, 8, 3, 0.045, false);
+                config = new Config(7, 8, 3, 0.05, false);
                 return config;
             default:
                 config = new Config(0, 0, 5, 0.0, false); 

@@ -4,6 +4,8 @@
 
 package frc.robot.Subsystems.drive;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import java.util.Queue;
 
 import com.ctre.phoenix6.StatusSignal;
@@ -31,6 +33,11 @@ public class GyroIOReal implements GyroIO {
         gyro.optimizeBusUtilization();
         yawTimestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
         yawPositionQueue = SparkOdometryThread.getInstance().registerSignal(yaw::getValueAsDouble);
+    }
+
+    @Override
+    public double getHeading() {
+        return gyro.getYaw().getValue().in(Degrees);
     }
 
     @Override

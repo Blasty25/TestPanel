@@ -22,23 +22,11 @@ public class Module {
     public Module(ModuleIO io, int index) {
         this.io = io;
         this.index = index;
-
     }
 
     public void periodic(){
         io.updateInputs(inputs);
         Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
-    
-        // Calculate positions for odometry
-        int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
-        odometryPositions = new SwerveModulePosition[sampleCount];
-        for (int i = 0; i < sampleCount; i++) {
-          double positionMeters =
-              inputs.odometryDrivePositionsRad[i]
-                  * DriveConstants.wheelRadius.in(Meter);
-          Rotation2d angle = inputs.odometryTurnPositions[i];
-          odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
-        }
     }
 
     // Returns the Angle of the Module
@@ -53,7 +41,7 @@ public class Module {
 
     public void setState(SwerveModuleState state){
         io.setDriveMotor(state.speedMetersPerSecond, driveFeedforward.calculate(state.speedMetersPerSecond));
-        io.setTurnMotor(state.angle.getRadians());
+        io.setTurnMotor(state.angle.getRadians(), 0.0);
     }
 
     public double getVelocityMetersPerSec() {
@@ -61,11 +49,11 @@ public class Module {
     }
 
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(getPositionMeters(), getAngle());
+        return new SwerveModulePosition(inputs.drivePosition, getAngle());
     }
 
     public SwerveModuleState getState() {
-        return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
+        return new SwerveModuleState(inputs.driveVelocity, getAngle());
     }
 
     public void runCharacterization(double volts){

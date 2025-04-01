@@ -42,7 +42,7 @@ public interface ModuleIO {
     public default void setDriveMotor(double positionRad, double feedForward) {
     }
 
-    public default void setTurnMotor(double rotation) {
+    public default void setTurnMotor(double rotation, double ffVoltage) {
     }
 
     public default void resetMotors(double position) {

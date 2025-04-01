@@ -28,11 +28,11 @@ public class Constants {
         public static final double turnGearing = 12.8; 
         public static final double turnMOI = 0.005;
 
-        public static final double drivekP = 0.6;
+        public static final double drivekP = 0.103;
         public static final double drivekI = 0.0;
         public static final double drivekD = 0.0;
 
-        public static final double turnkP = 0.8;
+        public static final double turnkP = 1.5;
         public static final double turnkI = 0.0;
         public static final double turnkD = 0.0;
 
@@ -45,12 +45,12 @@ public class Constants {
         public static final double negTrack = Units.inchesToMeters(10.0);
         public static final double posTrack = Units.inchesToMeters(10.0);
 
-        public static final int driveCurrentLimitAmps = 80;
+        public static final int driveCurrentLimitAmps = 40;
         public static final int turnCurrentLimitAmps = 40;
 
-        public static final double drivePositionConversionFactor =  wheelRadius.in(Meter)
+        public static final double drivePositionConversionFactor = 2 * Math.PI * wheelRadius.in(Meter)
                 / driveGearing;
-        public static final double turnPositionConversionFactor = 2.0 * Math.PI / turnGearing;
+        public static final double turnPositionConversionFactor = 2 * Math.PI / turnGearing;
 
         public static final double driveVelocityFactor = drivePositionConversionFactor / 60.0;
         public static final double turnVelocityFactor = turnPositionConversionFactor / 60.0;
@@ -63,7 +63,7 @@ public class Constants {
         };
 
         public static final double maxDriveSpeed = 4.75; // Meters per second
-        public static final double maxAngularspeed = 3.25; // Figure out max speeds later
+        public static final double maxAngularspeed = 3.75; // Figure out max speeds later
 
         public enum BOT {
             Protolone,

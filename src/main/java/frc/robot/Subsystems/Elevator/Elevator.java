@@ -12,6 +12,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.units.measure.Distance;
@@ -26,14 +27,14 @@ public class Elevator extends SubsystemBase {
     private ElevatorIO io;
     private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
-    private LoggedTunableNumber kP = new LoggedTunableNumber("Elevator/PID/kP", 40.0);
+    private LoggedTunableNumber kP = new LoggedTunableNumber("Elevator/PID/kP", 110.0);
     private LoggedTunableNumber kI = new LoggedTunableNumber("Elevator/PID/kI", 0.0);
-    private LoggedTunableNumber kD = new LoggedTunableNumber("Elevator/PID/kD", 27.0);
+    private LoggedTunableNumber kD = new LoggedTunableNumber("Elevator/PID/kD", 0.0);
 
-    private LoggedTunableNumber kS = new LoggedTunableNumber("Elevator/FF/kS", 3.0);
+    private LoggedTunableNumber kS = new LoggedTunableNumber("Elevator/FF/kS", 0.0);
     private LoggedTunableNumber kG = new LoggedTunableNumber("Elevator/FF/kG", 0.0);
     private LoggedTunableNumber kV = new LoggedTunableNumber("Elevator/FF/kV", 4.2);
-    private LoggedTunableNumber kA = new LoggedTunableNumber("Elevator/FF/kA", 3.3);
+    private LoggedTunableNumber kA = new LoggedTunableNumber("Elevator/FF/kA", 3.7);
 
     private ElevatorFeedforward ff = new ElevatorFeedforward(kS.getAsDouble(), kG.getAsDouble(), kV.getAsDouble(),
             kA.getAsDouble(), 0.02);
@@ -48,7 +49,7 @@ public class Elevator extends SubsystemBase {
         pid.setTolerance(0.001);
     }
 
-    public void setSetpoint(String setpoint) {
+    public void setSetpoint(String setpoint) {  //Setpoints are in Meters!
         if (setpoint.equals("STOW")) {
             setPosition(0, 0);
         }
